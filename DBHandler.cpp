@@ -171,7 +171,7 @@ string DBHandler::getLogs() {
 	datalogs.setName("datalogs");
 	vector<string> datalogColumns = getColumnInfo("name", "datalogs");
 
-	for (unsigned int i = 0; i < logIds.size(); i++) {
+/*	for (unsigned int i = 0; i < logIds.size(); i++) {
 		JSONData data;
 
 		for (unsigned int j = 0; j < datalogColumns.size(); j++) {
@@ -203,12 +203,23 @@ string DBHandler::getLogs() {
 		block.add(data.toString());
 		messages.add(block.toString());
 	}
+*/
+	stringstream lastId;
+	lastId << m_latestDataLogId;
+	JSONData data;
+	for (unsigned int j = 0; j < datalogColumns.size(); j++) {
+		data.add(datalogColumns[j], retriveCell("datalogs", lastId.str(), datalogColumns[j]));
+	}
+	JSONBlock block;
+	block.add(data.toString());
+	datalogs.add(block.toString());
 
 	JSONBlock main;
 	if(logIds.size() > 0)
 		main.add(datalogs.toString());
-	if(msgIds.size() > 0)
+/*	if(msgIds.size() > 0)
 		main.add(messages.toString());
+*/
 
 	return main.toString();
 }
@@ -218,7 +229,7 @@ void DBHandler::removeLogs(string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
-		std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id") << "\n";
+std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id") << "\n";
 		queryTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
 	}
 }
