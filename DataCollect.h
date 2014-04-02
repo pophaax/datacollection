@@ -1,3 +1,6 @@
+#ifndef __DATACOLLECT_H__
+#define __DATACOLLECT_H__
+
 #include <iostream>
 #include <sstream>
 #include "sqlite3.h"
@@ -77,3 +80,4 @@ public:
 
 };
 
+#endif
