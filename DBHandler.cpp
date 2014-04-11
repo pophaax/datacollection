@@ -1,23 +1,23 @@
-#include "DataCollect.h"
+#include "DBHandler.h"
 
-const char* DataCollect::m_gps =
+const char* DBHandler::m_gps =
 		"CREATE TABLE gps (id INTEGER PRIMARY KEY AUTOINCREMENT, server_time TIMESTAMP, gps_time VARCHAR, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, speed DOUBLE, heading DOUBLE);";
-const char* DataCollect::m_calc =
+const char* DBHandler::m_calc =
 		"CREATE TABLE calc (id INTEGER PRIMARY KEY AUTOINCREMENT, offCourse INTEGER, steeringConstant INTEGER, cts DOUBLE, bwp DOUBLE, dwp DOUBLE, tack BOOL);";
-const char* DataCollect::m_head =
+const char* DBHandler::m_head =
 		"CREATE TABLE head (id INTEGER PRIMARY KEY AUTOINCREMENT, hdt_heading DECIMAL, gps_heading DECIMAL);";
-const char* DataCollect::m_wp =
+const char* DBHandler::m_wp =
 		"CREATE TABLE wp (id INTEGER PRIMARY KEY AUTOINCREMENT, wp_latitude DECIMAL, wp_longitude DECIMAL);";
-const char* DataCollect::m_synch =
+const char* DBHandler::m_synch =
 		"CREATE TABLE synch (id INTEGER PRIMARY KEY AUTOINCREMENT, sql_strings TEXT, synched BOOL);";
 
-DataCollect::DataCollect(void) {
+DBHandler::DBHandler(void) {
 }
 
-DataCollect::~DataCollect(void) {
+DBHandler::~DBHandler(void) {
 }
 
-bool DataCollect::openDatabase(void) {
+bool DBHandler::openDatabase(void) {
 	//char*error;
 	//cout << "Opening MyDb.db ..." << endl;
 
@@ -37,7 +37,7 @@ bool DataCollect::openDatabase(void) {
 	}
 }
 
-bool DataCollect::createTables(void) {
+bool DBHandler::createTables(void) {
 
 	for (int i = 0; i < 5; i++) {
 		if (i == 0)
@@ -70,7 +70,7 @@ bool DataCollect::createTables(void) {
 	return true;
 }
 
-bool DataCollect::updateTable(string sqlINSERT) {
+bool DBHandler::updateTable(string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 	if (m_rc) {
@@ -84,7 +84,7 @@ bool DataCollect::updateTable(string sqlINSERT) {
 	}
 }
 
-char** DataCollect::retriveFromTable(string sqlSELECT, int &rows,
+char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 		int &columns) {
 	char **results = NULL;
 
@@ -103,7 +103,7 @@ char** DataCollect::retriveFromTable(string sqlSELECT, int &rows,
 		return results;
 }
 
-void DataCollect::printResults(char **results, int rows, int columns) {
+void DBHandler::printResults(char **results, int rows, int columns) {
 	// Display Table
 	for (int rowCtr = 0; rowCtr <= rows; ++rowCtr) {
 		for (int colCtr = 0; colCtr < columns; ++colCtr) {
@@ -132,7 +132,7 @@ void DataCollect::printResults(char **results, int rows, int columns) {
 	cout << endl;
 }
 
-void DataCollect::printSelect(string sqlSelect) {
+void DBHandler::printSelect(string sqlSelect) {
 	char** result;
 	int rows, columns;
 
@@ -140,12 +140,12 @@ void DataCollect::printSelect(string sqlSelect) {
 	printResults(result, rows, columns);
 }
 
-void DataCollect::closeDatabase(void) {
+void DBHandler::closeDatabase(void) {
 	sqlite3_close (m_db);
 	cout << endl << "Closed DatCol.db" << endl << endl;
 }
 
-string DataCollect::createSQLsynchString(string sqlString) {
+string DBHandler::createSQLsynchString(string sqlString) {
 	string sqlstart = "INSERT INTO synch VALUES(NULL, \"";
 	stringstream sstm;
 
@@ -154,7 +154,7 @@ string DataCollect::createSQLsynchString(string sqlString) {
 	return sstm.str();
 }
 
-void DataCollect::insertGPSdata(string gps_time, double latitude,
+void DBHandler::insertGPSdata(string gps_time, double latitude,
 		double longitude, double altitude, double speed, double heading) {
 	string sqlstart = "INSERT INTO gps VALUES(NULL,NULL, '";
 	string result;
@@ -168,7 +168,7 @@ void DataCollect::insertGPSdata(string gps_time, double latitude,
 	updateTable(createSQLsynchString(result));
 }
 
-void DataCollect::insertCalculations(int offCourse, int steeringConstant,
+void DBHandler::insertCalculations(int offCourse, int steeringConstant,
 		double CTS, double BWP, double DWP, bool TACK) {
 	string sqlstart = "INSERT INTO calc VALUES(NULL, ";
 	string result;
@@ -182,7 +182,7 @@ void DataCollect::insertCalculations(int offCourse, int steeringConstant,
 	updateTable(createSQLsynchString(result));
 }
 
-void DataCollect::insertHeadingData(double hdt_heading, double gps_heading) {
+void DBHandler::insertHeadingData(double hdt_heading, double gps_heading) {
 	string sqlstart = "INSERT INTO head VALUES(NULL, ";
 	string result;
 	stringstream sstm;
@@ -194,7 +194,7 @@ void DataCollect::insertHeadingData(double hdt_heading, double gps_heading) {
 	updateTable(createSQLsynchString(result));
 }
 
-void DataCollect::insertWPdata(double wp_latitude, double wp_longitude) {
+void DBHandler::insertWPdata(double wp_latitude, double wp_longitude) {
 	string sqlstart = "INSERT INTO wp VALUES(NULL, ";
 	string result;
 	stringstream sstm;
@@ -206,7 +206,7 @@ void DataCollect::insertWPdata(double wp_latitude, double wp_longitude) {
 	updateTable(createSQLsynchString(result));
 }
 
-char** DataCollect::retriveSynchData(int &rows, int &columns) {
+char** DBHandler::retriveSynchData(int &rows, int &columns) {
 	string sqlSelectString = "SELECT sql_strings FROM synch WHERE synched = 0";
 	string sqlUpdateString = "UPDATE synch SET synched = 1 WHERE synched = 0";
 

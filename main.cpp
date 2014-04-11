@@ -1,8 +1,8 @@
-#include "DataCollect.h"
+#include "DBHandler.h"
 
 int main() {
 
-	DataCollect dc;
+	DBHandler dc;
 
 	dc.openDatabase();
 	dc.createTables();

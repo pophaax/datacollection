@@ -1,5 +1,5 @@
-#ifndef __DATACOLLECT_H__
-#define __DATACOLLECT_H__
+#ifndef __DBHANDLER_H__
+#define __DBHANDLER_H__ //__DATACOLLECT_H__
 
 #include <iostream>
 #include <sstream>
@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class DataCollect {
+class DBHandler {
 
 private:
 
@@ -33,10 +33,10 @@ private:
 public:
 
 	//constructor
-	DataCollect(void);
+	DBHandler(void);
 
 	//destructor
-	~DataCollect(void);
+	~DBHandler(void);
 
 	//open database
 	bool openDatabase();

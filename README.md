@@ -1,5 +1,5 @@
-datacollection
+dbhandler
 ==============
 compile testfile with:
 
-    g++ main.cpp DataCollect.cpp -lpthread -ldl -lsqlite3
+    g++ main.cpp DBHandler.cpp -lpthread -ldl -lsqlite3
