@@ -1,11 +1,9 @@
 #include "DBHandler.h"
 
 const char* DBHandler::m_gps =
-		"CREATE TABLE gps (id INTEGER PRIMARY KEY AUTOINCREMENT, server_time TIMESTAMP, gps_time VARCHAR,
-		latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, speed DOUBLE, heading DOUBLE);";
+        "CREATE TABLE gps (id INTEGER PRIMARY KEY AUTOINCREMENT, server_time TIMESTAMP, gps_time VARCHAR, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, speed DOUBLE, heading DOUBLE);";
 const char* DBHandler::m_calc =
-		"CREATE TABLE calc (id INTEGER PRIMARY KEY AUTOINCREMENT, offCourse INTEGER, steeringConstant INTEGER,
-		cts DOUBLE, bwp DOUBLE, dwp DOUBLE, tack BOOL);";
+        "CREATE TABLE calc (id INTEGER PRIMARY KEY AUTOINCREMENT, offCourse INTEGER, steeringConstant INTEGER, cts DOUBLE, bwp DOUBLE, dwp DOUBLE, tack BOOL);";
 const char* DBHandler::m_head =
 		"CREATE TABLE head (id INTEGER PRIMARY KEY AUTOINCREMENT, hdt_heading DECIMAL, gps_heading DECIMAL);";
 const char* DBHandler::m_wp =
