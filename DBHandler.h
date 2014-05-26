@@ -16,8 +16,9 @@ private:
 	sqlite3 *m_db;
 	char *m_error;
 	static const char *m_configs;
-	static const char *m_logs;
+	static const char *m_dataLogs;
 	static const char *m_waypoints;
+	static const char *m_errorLogs;
 
 	//create INSERT string for adding to synch table
 	string createSQLsynchString(string sqlString);
@@ -71,7 +72,7 @@ public:
         	string gps_portname,
         	string gps_connectionname);
 
-	void insertLog(
+	void insertDataLog(
         	int sc_command,
 
         	int rc_command,
@@ -101,7 +102,9 @@ public:
 			int gps_mode,
 			int gps_satellites);
 
-	void insertWaypoint(int routeid, int latitude, int longitude);
+	void insertErrorLog(string error);
+
+	void insertWaypoint(int routeid, double latitude, double longitude);
 
 	//constructor
 	DBHandler(void);
@@ -110,7 +113,7 @@ public:
 	~DBHandler(void);
 
 	//open database
-	bool openDatabase();
+	bool openDatabase(string fileName);
 
 	//close database
 	void closeDatabase();
@@ -118,29 +121,8 @@ public:
 	//create tables
 	bool createTables();
 
-	//print result set from sql query as a table
-/*	void printSelect(string sqlSelect);
+	string retriveCell(string table, string id, string column);
 
-	//print results as a table from char** result set
-	void printResults(char **results, int rows, int columns);
-
-	//get a set of strings with SQL updates
-	char** retriveSynchData(int &rows, int &columns);
-
-	//insert into gps table
-	void insertGPSdata(string gps_time, double latitude, double longitude,
-			double altitude, double speed, double heading);
-
-	//insert into calc table
-	void insertCalculations(int offCourse, int steeringConstant, double CTS,
-			double BWP, double DWP, bool TACK);
-
-	//insert into head table
-	void insertHeadingData(double hdt_heading, double gps_heading);
-
-	//insert into waypoint table
-	void insertWPdata(double wp_latitude, double wp_longitude);
-*/
 };
 
 #endif

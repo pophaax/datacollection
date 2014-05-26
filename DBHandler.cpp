@@ -84,7 +84,6 @@ void DBHandler::insertConfig(
         	string gps_connectionname) {
 
 	string sqlstart = "INSERT INTO configs VALUES(NULL";
-	string result;
 	stringstream sstm;
 
 	sstm << sqlstart
@@ -110,14 +109,11 @@ void DBHandler::insertConfig(
 
 		<< "');";
 
-	result = sstm.str();
-
-	updateTable(result);
-//	updateTable(createSQLsynchString(result));
+	updateTable(sstm.str());
 }
 
-const char* DBHandler::m_logs =
-			"CREATE TABLE logs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+const char* DBHandler::m_dataLogs =
+			"CREATE TABLE datalogs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
 
 			"logtime TIMESTAMP,"
 
@@ -150,7 +146,7 @@ const char* DBHandler::m_logs =
 			"gps_mode INTEGER,"
 			"gps_satellites INTEGER);";
 
-void DBHandler::insertLog(
+void DBHandler::insertDataLog(
         	int sc_command,
 
         	int rc_command,
@@ -180,8 +176,7 @@ void DBHandler::insertLog(
 			int gps_mode,
 			int gps_satellites) {
 
-	string sqlstart = "INSERT INTO logs VALUES(NULL, NULL";
-	string result;
+	string sqlstart = "INSERT INTO datalogs VALUES(NULL, NULL";
 	stringstream sstm;
 
 	sstm << sqlstart
@@ -204,12 +199,22 @@ void DBHandler::insertLog(
 
 		<< ");";
 
-	result = sstm.str();
-
-	updateTable(result);
-//	updateTable(createSQLsynchString(result));
+	updateTable(sstm.str());
 }
 
+const char* DBHandler::m_errorLogs =
+			"CREATE TABLE errorlogs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+			"logtime TIMESTAMP,"
+			"error VARCHAR);";
+
+void DBHandler::insertErrorLog(string error) {
+	string sqlstart = "INSERT INTO errorlogs VALUES(NULL, NULL";
+	string result;
+	stringstream sstm;
+	sstm << sqlstart
+		<< ", '" << error << "');";
+	updateTable(sstm.str());
+}
 
 const char* DBHandler::m_waypoints =
 			"CREATE TABLE waypoints (id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -222,11 +227,10 @@ const char* DBHandler::m_waypoints =
 void DBHandler::insertWaypoint(
         	int routeid,
 
-        	int latitude,
-        	int longitude) {
+        	double latitude,
+        	double longitude) {
 
 	string sqlstart = "INSERT INTO waypoints VALUES(NULL";
-	string result;
 	stringstream sstm;
 
 	sstm << sqlstart
@@ -235,10 +239,7 @@ void DBHandler::insertWaypoint(
 		<< ", " << latitude << ", " << longitude
 		<< ");";
 
-	result = sstm.str();
-
-	updateTable(result);
-//	updateTable(createSQLsynchString(result));
+	updateTable(sstm.str());
 }
 
 DBHandler::DBHandler(void) {
@@ -247,11 +248,8 @@ DBHandler::DBHandler(void) {
 DBHandler::~DBHandler(void) {
 }
 
-bool DBHandler::openDatabase(void) {
-	//char*error;
-	//cout << "Opening MyDb.db ..." << endl;
-
-	m_rc = sqlite3_open("DatCol.db", &m_db);
+bool DBHandler::openDatabase(string fileName) {
+	m_rc = sqlite3_open(fileName.c_str(), &m_db);
 
 	if (m_rc) {
 		cerr << "Error opening SQLite3 database: " << sqlite3_errmsg(m_db)
@@ -260,41 +258,37 @@ bool DBHandler::openDatabase(void) {
 		return false;
 	}
 
-	//return a bool
-	else {
-		cout << "Opened DatCol.db." << endl << endl;
-		return true;
-	}
+	return true;
 }
 
 void DBHandler::closeDatabase(void) {
 	sqlite3_close (m_db);
-	cout << endl << "Closed DatCol.db" << endl << endl;
 }
 
 bool DBHandler::createTables(void) {
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (i == 0)
 			m_rc = sqlite3_exec(m_db, m_configs, NULL, NULL, &m_error);
 
 		else if (i == 1)
-			m_rc = sqlite3_exec(m_db, m_logs, NULL, NULL, &m_error);
+			m_rc = sqlite3_exec(m_db, m_dataLogs, NULL, NULL, &m_error);
 
 		else if (i == 2)
 			m_rc = sqlite3_exec(m_db, m_waypoints, NULL, NULL, &m_error);
+
+		else if (i == 3)
+			m_rc = sqlite3_exec(m_db, m_errorLogs, NULL, NULL, &m_error);
 
 
 		if (m_rc) {
 			cerr << "Error executing SQLite3 statement: "
 					<< sqlite3_errmsg(m_db) << endl << endl;
-			sqlite3_free (m_error);
+			sqlite3_free(m_error);
 
 			return false;
 		}
 
-		else
-			cout << "Created table no: " << i + 1 << endl << endl;
 	}
 
 	return true;
@@ -308,10 +302,9 @@ bool DBHandler::updateTable(string sqlINSERT) {
 				<< endl << endl;
 		sqlite3_free (m_error);
 		return false;
-	} else {
-		//cout << "Inserted a value into a given table." << endl << endl;
-		return true;
 	}
+
+	return true;
 }
 
 char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
@@ -322,9 +315,10 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 			&m_error);
 
 	if (m_rc) {
-		cerr << "Error executing SQLite3 query: " << sqlite3_errmsg(m_db)
-				<< endl << endl;
-		sqlite3_free (m_error);
+		stringstream sstm;
+		sstm << "DBHandler::retrieveFromTable(), " << m_error;
+		insertErrorLog(sstm.str());
+		sqlite3_free(m_error);
 
 		return NULL;
 	}
@@ -333,112 +327,14 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 		return results;
 }
 
-/*void DBHandler::printResults(char **results, int rows, int columns) {
-	// Display Table
-	for (int rowCtr = 0; rowCtr <= rows; ++rowCtr) {
-		for (int colCtr = 0; colCtr < columns; ++colCtr) {
-			// Determine Cell Position
-			int cellPosition = (rowCtr * columns) + colCtr;
+string DBHandler::retriveCell(string table, string id, string column) {
 
-			// Display Cell Value
-			cout.width(12);
-			cout.setf(ios::left);
-			cout << results[cellPosition] << " ";
-		}
+ 	stringstream sstm;
+	sstm << "SELECT " << column << " FROM " << table << " WHERE id=" << id << ";";
 
-		// End Line
-		cout << endl;
-
-		// Display Separator For Header
-		if (0 == rowCtr) {
-			for (int colCtr = 0; colCtr < columns; ++colCtr) {
-				cout.width(12);
-				cout.setf(ios::left);
-				cout << "------------ ";
-			}
-			cout << endl;
-		}
-	}
-	cout << endl;
-}
-
-void DBHandler::printSelect(string sqlSelect) {
-	char** result;
 	int rows, columns;
+    char** results;
+    results = retriveFromTable(sstm.str(), rows, columns);
 
-	result = retriveFromTable(sqlSelect, rows, columns);
-	printResults(result, rows, columns);
+    return results[1];
 }
-
-
-string DBHandler::createSQLsynchString(string sqlString) {
-	string sqlstart = "INSERT INTO synch VALUES(NULL, \"";
-	stringstream sstm;
-
-	sstm << sqlstart << sqlString << "\", " << 0 << ");";
-
-	return sstm.str();
-}
-
-void DBHandler::insertGPSdata(string gps_time, double latitude,
-		double longitude, double altitude, double speed, double heading) {
-	string sqlstart = "INSERT INTO gps VALUES(NULL,NULL, '";
-	string result;
-	stringstream sstm;
-
-	sstm << sqlstart << gps_time << "', " << latitude << ", " << longitude
-			<< ", " << altitude << ", " << speed << ", " << heading << ");";
-	result = sstm.str();
-
-	updateTable(result);
-	updateTable(createSQLsynchString(result));
-}
-
-void DBHandler::insertCalculations(int offCourse, int steeringConstant,
-		double CTS, double BWP, double DWP, bool TACK) {
-	string sqlstart = "INSERT INTO calc VALUES(NULL, ";
-	string result;
-	stringstream sstm;
-
-	sstm << sqlstart << offCourse << ", " << steeringConstant << ", " << CTS
-			<< ", " << BWP << ", " << DWP << ", " << TACK << ");";
-	result = sstm.str();
-
-	updateTable(result);
-	updateTable(createSQLsynchString(result));
-}
-
-void DBHandler::insertHeadingData(double hdt_heading, double gps_heading) {
-	string sqlstart = "INSERT INTO head VALUES(NULL, ";
-	string result;
-	stringstream sstm;
-
-	sstm << sqlstart << hdt_heading << ", " << gps_heading << ");";
-	result = sstm.str();
-
-	updateTable(result);
-	updateTable(createSQLsynchString(result));
-}
-
-void DBHandler::insertWPdata(double wp_latitude, double wp_longitude) {
-	string sqlstart = "INSERT INTO wp VALUES(NULL, ";
-	string result;
-	stringstream sstm;
-
-	sstm << sqlstart << wp_latitude << ", " << wp_longitude << ");";
-	result = sstm.str();
-
-	updateTable(result);
-	updateTable(createSQLsynchString(result));
-}
-
-char** DBHandler::retriveSynchData(int &rows, int &columns) {
-	string sqlSelectString = "SELECT sql_strings FROM synch WHERE synched = 0";
-	string sqlUpdateString = "UPDATE synch SET synched = 1 WHERE synched = 0";
-
-	char** result = retriveFromTable(sqlSelectString, rows, columns);
-	updateTable(sqlUpdateString);
-
-	return result;
-}
-*/

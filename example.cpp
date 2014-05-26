@@ -2,7 +2,7 @@
 
 int main() {
 	DBHandler db;
-	db.openDatabase();
+	db.openDatabase("new.db");
 	db.createTables();
 	db.insertConfig(
 			0, //int sc_commandclosereach,
@@ -44,5 +44,10 @@ int main() {
 
         	"/dev/ttyGG", //string gps_portname,
         	"localhost"); //string gps_connectionname);
-	
+
+        db.insertErrorLog("maddafakka");
+
+        db.insertWaypoint(1, 10.1, 20.1);
+
+        std::cout << db.retriveCell("configs", "1", "sc_commandrunning") << "\n";
 }
