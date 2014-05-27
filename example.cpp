@@ -5,18 +5,18 @@ int main() {
 	db.openDatabase("asr.db");
 	db.createTables();
 	db.insertConfig(
-		1456, //int sc_commandclosereach,
-        	1550, //int sc_commandbeamreach,
-        	1650, //int sc_commandbroadreach,
-        	1856, //int sc_commandrunning,
+		7424, //int sc_commandclosereach,
+        	6600, //int sc_commandbeamreach,
+        	6200, //int sc_commandbroadreach,
+        	5824, //int sc_commandrunning,
         	120, //int sc_anglebeamreach,
         	80, //int sc_anglebroadreach,
         	40, //int sc_anglerunning,
 
-        	1904, //int rc_commandextreme,
-        	1700, //int rc_commandmedium,
-        	1550, //int rc_commandsmall,
-        	1496, //int rc_commandmidships,
+        	7616, //int rc_commandextreme,
+        	7000, //int rc_commandmedium,
+        	6500, //int rc_commandsmall,
+        	5984, //int rc_commandmidships,
         	60, //int rc_anglemedium,
         	30, //int rc_anglesmall,
         	10, //int rc_anglemidships,
