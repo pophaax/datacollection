@@ -124,7 +124,6 @@ const char* DBHandler::m_dataLogs =
         	"cc_dtw INTEGER,"
         	"cc_btw INTEGER,"
         	"cc_cts INTEGER,"
-        	"cc_twd INTEGER,"
         	"cc_tack INTEGER,"
 
         	"ws_buffersize INTEGER,"
@@ -186,14 +185,14 @@ void DBHandler::insertDataLog(
 		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
 		
 		<< ", " << ws_buffersize << ", '" << ws_sensormodel << "', " << ws_direction
-		<< ", " << ws_speed << "', " << ws_temperature
+		<< ", " << ws_speed << ", " << ws_temperature
 
 		<< ", " << rs_position
 
 		<< ", " << ss_position
 
-		<< ", '" << gps_timestamp << "', " << gps_latitude << ", '" << gps_longitude
-		<< ", " << gps_altitude << ", " << gps_speed << ", '" << gps_heading
+		<< ", '" << gps_timestamp << "', " << gps_latitude << ", " << gps_longitude
+		<< ", " << gps_altitude << ", " << gps_speed << ", " << gps_heading
 		<< ", " << gps_mode << ", " << gps_satellites
 
 		<< ");";
