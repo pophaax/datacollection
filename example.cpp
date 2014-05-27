@@ -45,7 +45,7 @@ int main() {
         	"/dev/ttyUSB0", //string gps_portname,
         	"localhost"); //string gps_connectionname);
 
-        db.insertWaypoint(1, 10.1, 20.1);
+        db.insertWaypoint(1, 60.767208, 19.823913);
 
-        std::cout << db.retriveCell("configs", "1", "sc_commandrunning") << "\n";
+//        std::cout << db.retriveCell("configs", "1", "sc_commandrunning") << "\n";
 }
