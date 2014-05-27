@@ -2,50 +2,48 @@
 
 int main() {
 	DBHandler db;
-	db.openDatabase("new.db");
+	db.openDatabase("asr.db");
 	db.createTables();
 	db.insertConfig(
-			0, //int sc_commandclosereach,
-        	1, //int sc_commandbeamreach,
-        	2, //int sc_commandbroadreach,
-        	3, //int sc_commandrunning,
-        	0, //int sc_anglebeamreach,
-        	1, //int sc_anglebroadreach,
-        	2, //int sc_anglerunning,
+		1456, //int sc_commandclosereach,
+        	1550, //int sc_commandbeamreach,
+        	1650, //int sc_commandbroadreach,
+        	1856, //int sc_commandrunning,
+        	120, //int sc_anglebeamreach,
+        	80, //int sc_anglebroadreach,
+        	40, //int sc_anglerunning,
 
-        	0, //int rc_commandextreme,
-        	1, //int rc_commandmedium,
-        	2, //int rc_commandsmall,
-        	3, //int rc_commandmidships,
-        	0, //int rc_anglemedium,
-        	1, //int rc_anglesmall,
-        	2, //int rc_anglemidships,
+        	1904, //int rc_commandextreme,
+        	1700, //int rc_commandmedium,
+        	1550, //int rc_commandsmall,
+        	1496, //int rc_commandmidships,
+        	60, //int rc_anglemedium,
+        	30, //int rc_anglesmall,
+        	10, //int rc_anglemidships,
 
         	10, //int cc_tackangle,
         	45, //int cc_sectorangle,
 
-        	"WAINDSENRSOR", //string ws_sensormodel,
-        	"/dev/ttySMTHING", //string ws_portname,
-        	4600, //int ws_baudrate,
+        	"CV7", //string ws_sensormodel,
+        	"/dev/ttyAMA0", //string ws_portname,
+        	4800, //int ws_baudrate,
 
-        	"/dev/ttyAGAIN", //string mc_portname,
+        	"/dev/ttyACM0", //string mc_portname,
 
         	0, //int rs_channel,
         	0, //int rs_speed,
         	0, //int rs_acceleration,
-        	4000, //int rs_limitmin,
-        	8000, //int rs_limitmax,
+        	1088, //int rs_limitmin,
+        	1904, //int rs_limitmax,
 
         	1, //int ss_channel,
         	0, //int ss_speed,
         	0, //int ss_acceleration,
-        	4000, //int ss_limitmin,
-        	8000, //int ss_limitmax,
+        	1456, //int ss_limitmin,
+        	1856, //int ss_limitmax,
 
-        	"/dev/ttyGG", //string gps_portname,
+        	"/dev/ttyUSB0", //string gps_portname,
         	"localhost"); //string gps_connectionname);
-
-        db.insertErrorLog("maddafakka");
 
         db.insertWaypoint(1, 10.1, 20.1);
 

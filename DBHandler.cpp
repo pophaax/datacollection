@@ -154,7 +154,6 @@ void DBHandler::insertDataLog(
         	int cc_dtw,
         	int cc_btw,
         	int cc_cts,
-        	int cc_twd,
         	int cc_tack,
 
         	int ws_buffersize,
@@ -184,7 +183,7 @@ void DBHandler::insertDataLog(
 
 		<< ", " << rc_command
 
-		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_twd << ", " << cc_tack
+		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
 		
 		<< ", " << ws_buffersize << ", '" << ws_sensormodel << "', " << ws_direction
 		<< ", " << ws_speed << "', " << ws_temperature

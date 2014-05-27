@@ -32,7 +32,7 @@ private:
 
 public:
 	void insertConfig(
-			int sc_commandclosereach,
+		int sc_commandclosereach,
         	int sc_commandbeamreach,
         	int sc_commandbroadreach,
         	int sc_commandrunning,
@@ -80,7 +80,6 @@ public:
         	int cc_dtw,
         	int cc_btw,
         	int cc_cts,
-        	int cc_twd,
         	int cc_tack,
 
         	int ws_buffersize,
@@ -93,14 +92,14 @@ public:
 
         	int ss_position,
 
-			string gps_timestamp,
-			double gps_latitude,
-			double gps_longitude,
-			double gps_altitude,
-			double gps_speed,
-			double gps_heading,
-			int gps_mode,
-			int gps_satellites);
+		string gps_timestamp,
+		double gps_latitude,
+		double gps_longitude,
+		double gps_altitude,
+		double gps_speed,
+		double gps_heading,
+		int gps_mode,
+		int gps_satellites);
 
 	void insertErrorLog(string error);
 
