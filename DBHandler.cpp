@@ -246,24 +246,23 @@ DBHandler::DBHandler(void) {
 DBHandler::~DBHandler(void) {
 }
 
-bool DBHandler::openDatabase(string fileName) {
+void DBHandler::openDatabase(string fileName) {
 	m_rc = sqlite3_open(fileName.c_str(), &m_db);
 
 	if (m_rc) {
-		cerr << "Error opening SQLite3 database: " << sqlite3_errmsg(m_db)
-				<< endl << endl;
-		sqlite3_close (m_db);
-		return false;
-	}
+		stringstream errorStream;
+		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
+		sqlite3_free(m_error);
 
-	return true;
+		throw errorStream.str();
+	}
 }
 
 void DBHandler::closeDatabase(void) {
 	sqlite3_close (m_db);
 }
 
-bool DBHandler::createTables(void) {
+void DBHandler::createTables(void) {
 
 	for (int i = 0; i < 4; i++) {
 		if (i == 0)
@@ -280,29 +279,26 @@ bool DBHandler::createTables(void) {
 
 
 		if (m_rc) {
-			cerr << "Error executing SQLite3 statement: "
-					<< sqlite3_errmsg(m_db) << endl << endl;
+			stringstream errorStream;
+			errorStream << "DBHandler::createTables(), " << sqlite3_errmsg(m_db);
 			sqlite3_free(m_error);
 
-			return false;
+			throw errorStream.str();
 		}
 
 	}
-
-	return true;
 }
 
-bool DBHandler::updateTable(string sqlINSERT) {
+void DBHandler::updateTable(string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 	if (m_rc) {
-		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(m_db)
-				<< endl << endl;
-		sqlite3_free (m_error);
-		return false;
-	}
+		stringstream errorStream;
+		errorStream << "DBHandler::updateTable(), " << sqlite3_errmsg(m_db);
+		sqlite3_free(m_error);
 
-	return true;
+		throw errorStream.str();
+	}
 }
 
 char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
@@ -313,16 +309,14 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 			&m_error);
 
 	if (m_rc) {
-		stringstream sstm;
-		sstm << "DBHandler::retrieveFromTable(), " << m_error;
-		insertErrorLog(sstm.str());
+		stringstream errorStream;
+		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
-		return NULL;
+		throw errorStream.str();
 	}
 
-	else
-		return results;
+	return results;
 }
 
 string DBHandler::retriveCell(string table, string id, string column) {
@@ -333,6 +327,18 @@ string DBHandler::retriveCell(string table, string id, string column) {
 	int rows, columns;
     char** results;
     results = retriveFromTable(sstm.str(), rows, columns);
+
+    if (rows < 1) {
+		stringstream errorStream;
+		errorStream << "DBHandler::retriveCell(), no rows from Query: " << sstm;
+    	throw errorStream.str();
+    }
+
+    if (columns < 1) {
+		stringstream errorStream;
+		errorStream << "DBHandler::retriveCell(), no columns from Query: " << sstm;
+    	throw errorStream.str();
+    }
 
     return results[1];
 }

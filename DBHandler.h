@@ -24,7 +24,7 @@ private:
 	string createSQLsynchString(string sqlString);
 
 	//execute INSERT query and add new row into table, the sql string will be also stored in a synch table
-	bool updateTable(string sqlINSERT);
+	void updateTable(string sqlINSERT);
 
 	//retrive data from given table/tables, return value is a C++ 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
@@ -112,13 +112,13 @@ public:
 	~DBHandler(void);
 
 	//open database
-	bool openDatabase(string fileName);
+	void openDatabase(string fileName);
 
 	//close database
 	void closeDatabase();
 
 	//create tables
-	bool createTables();
+	void createTables();
 
 	string retriveCell(string table, string id, string column);
 
