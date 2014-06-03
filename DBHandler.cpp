@@ -254,7 +254,7 @@ void DBHandler::openDatabase(string fileName) {
 		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
-		throw errorStream.str();
+		throw errorStream.str().c_str();
 	}
 }
 
@@ -283,7 +283,7 @@ void DBHandler::createTables(void) {
 			errorStream << "DBHandler::createTables(), " << sqlite3_errmsg(m_db);
 			sqlite3_free(m_error);
 
-			throw errorStream.str();
+			throw errorStream.str().c_str();
 		}
 
 	}
@@ -297,7 +297,7 @@ void DBHandler::updateTable(string sqlINSERT) {
 		errorStream << "DBHandler::updateTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
-		throw errorStream.str();
+		throw errorStream.str().c_str();
 	}
 }
 
@@ -313,7 +313,7 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
-		throw errorStream.str();
+		throw errorStream.str().c_str();
 	}
 
 	return results;
@@ -328,16 +328,16 @@ string DBHandler::retriveCell(string table, string id, string column) {
     char** results;
     results = retriveFromTable(sstm.str(), rows, columns);
 
-    if (rows < 1) {
-		stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no rows from Query: " << sstm;
-    	throw errorStream.str();
-    }
-
     if (columns < 1) {
 		stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no columns from Query: " << sstm;
-    	throw errorStream.str();
+		errorStream << "DBHandler::retriveCell(), no columns from Query: " << sstm.str();
+    	throw errorStream.str().c_str();
+    }
+
+    if (rows < 1) {
+		stringstream errorStream;
+		errorStream << "DBHandler::retriveCell(), no rows from Query: " << sstm.str();
+    	throw errorStream.str().c_str();
     }
 
     return results[1];
