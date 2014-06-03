@@ -259,7 +259,7 @@ void DBHandler::openDatabase(string fileName) {
 }
 
 void DBHandler::closeDatabase(void) {
-	sqlite3_close (m_db);
+	sqlite3_close(m_db);
 }
 
 void DBHandler::createTables(void) {
