@@ -15,13 +15,6 @@ private:
 	int m_rc;
 	sqlite3 *m_db;
 	char *m_error;
-	static const char *m_configs;
-	static const char *m_dataLogs;
-	static const char *m_waypoints;
-	static const char *m_errorLogs;
-
-	//create INSERT string for adding to synch table
-	string createSQLsynchString(string sqlString);
 
 	//execute INSERT query and add new row into table, the sql string will be also stored in a synch table
 	void updateTable(string sqlINSERT);
@@ -117,11 +110,8 @@ public:
 	//close database
 	void closeDatabase();
 
-	//create tables
-	void createTables();
-
+        //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
-
 };
 
 #endif

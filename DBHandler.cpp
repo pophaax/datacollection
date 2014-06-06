@@ -1,46 +1,5 @@
 #include "DBHandler.h"
 
-const char* DBHandler::m_configs =
-			"CREATE TABLE configs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        	"sc_commandclosereach INTEGER,"
-        	"sc_commandbeamreach INTEGER,"
-        	"sc_commandbroadreach INTEGER,"
-        	"sc_commandrunning INTEGER,"
-        	"sc_anglebeamreach INTEGER,"
-        	"sc_anglebroadreach INTEGER,"
-        	"sc_anglerunnning INTEGER,"
-
-        	"rc_commandextreme INTEGER,"
-        	"rc_commandmedium INTEGER,"
-        	"rc_commandsmall INTEGER,"
-        	"rc_commandmidships INTEGER,"
-        	"rc_anglemedium INTEGER,"
-        	"rc_anglesmall INTEGER,"
-        	"rc_anglemidships INTEGER,"
-
-        	"cc_tackangle INTEGER,"
-        	"cc_sectorangle INTEGER,"
-
-        	"ws_sensormodel VARCHAR,"
-        	"ws_portname VARCHAR,"
-        	"ws_baudrate INTEGER,"
-
-        	"mc_portname VARCHAR,"
-
-        	"rs_channel INTEGER,"
-        	"rs_speed INTEGER,"
-        	"rs_acceleration INTEGER,"
-        	"rs_limitmin INTEGER,"
-        	"rs_limitmax INTEGER,"
-
-        	"ss_channel INTEGER,"
-        	"ss_speed INTEGER,"
-        	"ss_acceleration INTEGER,"
-        	"ss_limitmin INTEGER,"
-        	"ss_limitmax INTEGER,"
-
-        	"gps_portname VARCHAR,"
-        	"gps_connectionname VARCHAR);";
 
 void DBHandler::insertConfig(
 			int sc_commandclosereach,
@@ -112,38 +71,6 @@ void DBHandler::insertConfig(
 	updateTable(sstm.str());
 }
 
-const char* DBHandler::m_dataLogs =
-			"CREATE TABLE datalogs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-
-			"logtime TIMESTAMP,"
-
-        	"sc_command INTEGER,"
-
-        	"rc_command INTEGER,"
-
-        	"cc_dtw INTEGER,"
-        	"cc_btw INTEGER,"
-        	"cc_cts INTEGER,"
-        	"cc_tack INTEGER,"
-
-        	"ws_buffersize INTEGER,"
-        	"ws_sensormodel VARCHAR,"
-        	"ws_direction INTEGER,"
-        	"ws_speed INTEGER,"
-        	"ws_temperature INTEGER,"
-
-        	"rs_position INTEGER,"
-
-        	"ss_position INTEGER,"
-
-			"gps_timestamp VARCHAR,"
-			"gps_latitude DOUBLE,"
-			"gps_longitude DOUBLE,"
-			"gps_altitude DOUBLE,"
-			"gps_speed DOUBLE,"
-			"gps_heading DOUBLE,"
-			"gps_mode INTEGER,"
-			"gps_satellites INTEGER);";
 
 void DBHandler::insertDataLog(
         	int sc_command,
@@ -200,10 +127,6 @@ void DBHandler::insertDataLog(
 	updateTable(sstm.str());
 }
 
-const char* DBHandler::m_errorLogs =
-			"CREATE TABLE errorlogs (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-			"logtime TIMESTAMP,"
-			"error VARCHAR);";
 
 void DBHandler::insertErrorLog(string error) {
 	string sqlstart = "INSERT INTO errorlogs VALUES(NULL, NULL";
@@ -214,13 +137,6 @@ void DBHandler::insertErrorLog(string error) {
 	updateTable(sstm.str());
 }
 
-const char* DBHandler::m_waypoints =
-			"CREATE TABLE waypoints (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-
-			"routeid INTEGER,"
-
-			"latitude DOUBLE,"
-			"longitude DOUBLE);";
 
 void DBHandler::insertWaypoint(
         	int routeid,
@@ -262,32 +178,6 @@ void DBHandler::closeDatabase(void) {
 	sqlite3_close(m_db);
 }
 
-void DBHandler::createTables(void) {
-
-	for (int i = 0; i < 4; i++) {
-		if (i == 0)
-			m_rc = sqlite3_exec(m_db, m_configs, NULL, NULL, &m_error);
-
-		else if (i == 1)
-			m_rc = sqlite3_exec(m_db, m_dataLogs, NULL, NULL, &m_error);
-
-		else if (i == 2)
-			m_rc = sqlite3_exec(m_db, m_waypoints, NULL, NULL, &m_error);
-
-		else if (i == 3)
-			m_rc = sqlite3_exec(m_db, m_errorLogs, NULL, NULL, &m_error);
-
-
-		if (m_rc) {
-			stringstream errorStream;
-			errorStream << "DBHandler::createTables(), " << sqlite3_errmsg(m_db);
-			sqlite3_free(m_error);
-
-			throw errorStream.str().c_str();
-		}
-
-	}
-}
 
 void DBHandler::updateTable(string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);

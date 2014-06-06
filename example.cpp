@@ -3,7 +3,6 @@
 int main() {
 	DBHandler db;
 	db.openDatabase("asr.db");
-	db.createTables();
 	db.insertConfig(
 		7424, //int sc_commandclosereach,
         	6600, //int sc_commandbeamreach,
