@@ -25,78 +25,65 @@ private:
 
 public:
 	void insertConfig(
-		int sc_commandclosereach,
-        	int sc_commandbeamreach,
-        	int sc_commandbroadreach,
-        	int sc_commandrunning,
-        	int sc_anglebeamreach,
-        	int sc_anglebroadreach,
-        	int sc_anglerunning,
-
-        	int rc_commandextreme,
-        	int rc_commandmedium,
-        	int rc_commandsmall,
-        	int rc_commandmidships,
-        	int rc_anglemedium,
-        	int rc_anglesmall,
-        	int rc_anglemidships,
-
-        	int cc_tackangle,
-        	int cc_sectorangle,
-
-        	string ws_sensormodel,
-        	string ws_portname,
-        	int ws_baudrate,
-
-        	string mc_portname,
-
-        	int rs_channel,
-        	int rs_speed,
-        	int rs_acceleration,
-        	int rs_limitmin,
-        	int rs_limitmax,
-
-        	int ss_channel,
-        	int ss_speed,
-        	int ss_acceleration,
-        	int ss_limitmin,
-        	int ss_limitmax,
-
-        	string gps_portname,
-        	string gps_connectionname);
+		int id,
+		int sc_cmd_clse,
+		int sc_cmd_beam,
+		int sc_cmd_brd,
+		int sc_cmd_run,
+		int sc_ang_beam,
+		int sc_ang_brd,
+		int sc_ang_run,
+		int rc_cmd_xtrm,
+		int rc_cmd_med,
+		int rc_cmd_sml,
+		int rc_cmd_mid,
+		int rc_ang_med,
+		int rc_ang_sml,
+		int rc_ang_mid,
+		int cc_ang_tack,
+		int cc_ang_sect,
+		string ws_modl,
+		int ws_chan,
+		string ws_port,
+		int ws_baud,
+		int ws_buff,
+		string mc_port,
+		int rs_chan,
+		int rs_spd,
+		int rs_acc,
+		int ss_chan,
+		int ss_spd,
+		int ss_acc);
 
 	void insertDataLog(
-        	int sc_command,
+		string gps_time,
+		double gps_lat,
+		double gps_long,
+		double gps_spd,
+		double gps_head,
+		int gps_sat,
+		int sc_cmd,
+		int rc_cmd,
+		int ss_pos,
+		int rs_pos,
+		int cc_dtw,
+		int cc_btw,
+		int cc_cts,
+		int cc_tack,
+		int ws_dir,
+		double ws_spd,
+		int ws_tmp,
+		string cfg_rev,
+		string route_rev,
+		int wpt_cur);
 
-        	int rc_command,
+	void insertMessageLog(string gps_time, string type, string msg);
 
-        	int cc_dtw,
-        	int cc_btw,
-        	int cc_cts,
-        	int cc_tack,
+	void insertWaypoint(int id, double lat, double lon);
 
-        	int ws_buffersize,
-        	string ws_sensormodel,
-        	int ws_direction,
-        	int ws_speed,
-        	int ws_temperature,
+	void insertServer(int id, string ship_name, string ship_pwd, string srv_addr);
 
-        	int rs_position,
-
-        	int ss_position,
-
-		string gps_timestamp,
-		double gps_latitude,
-		double gps_longitude,
-		double gps_altitude,
-		double gps_speed,
-		double gps_heading,
-		int gps_mode,
-		int gps_satellites);
-
-	void insertErrorLog(string error);
-
-	void insertWaypoint(int routeid, double latitude, double longitude);
+	void insertState(int id, string cfg_rev, string route_rev, int wpt_cur);
 
 	//constructor
 	DBHandler(void);
