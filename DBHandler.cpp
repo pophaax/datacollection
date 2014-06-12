@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "DBHandler.h"
 
 
@@ -118,7 +119,7 @@ void DBHandler::insertDataLog(
 
 		<< ", " << ss_position
 
-		<< ", '" << gps_timestamp << "', " << gps_latitude << ", " << gps_longitude
+		<< ", '" << gps_timestamp << "', " << std::setprecision(6) << gps_latitude << ", " << gps_longitude
 		<< ", " << gps_altitude << ", " << gps_speed << ", " << gps_heading
 		<< ", " << gps_mode << ", " << gps_satellites
 
