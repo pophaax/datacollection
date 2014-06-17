@@ -66,7 +66,7 @@ void DBHandler::insertConfig(
 void DBHandler::insertDataLog(
 	string gps_time,
 	double gps_lat,
-	double gps_long,
+	double gps_lon,
 	double gps_spd,
 	double gps_head,
 	int gps_sat,
@@ -74,15 +74,13 @@ void DBHandler::insertDataLog(
 	int rc_cmd,
 	int ss_pos,
 	int rs_pos,
-	int cc_dtw,
-	int cc_btw,
-	int cc_cts,
+	double cc_dtw,
+	double cc_btw,
+	double cc_cts,
 	int cc_tack,
 	int ws_dir,
 	double ws_spd,
 	int ws_tmp,
-	string cfg_rev,
-	string route_rev,
 	int wpt_cur) {
 
 	string sqlstart = "INSERT INTO datalogs VALUES(NULL";
@@ -91,7 +89,7 @@ void DBHandler::insertDataLog(
 	sstm << sqlstart
 		<< ", '" << gps_time
 
-		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_long << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
+		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 
 		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
 
@@ -99,20 +97,20 @@ void DBHandler::insertDataLog(
 
 		<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp
 
-		<< ", '" << cfg_rev << "', '" << route_rev << "', " << wpt_cur
+		<< ", "  << wpt_cur
 		<< ");";
 
 	updateTable(sstm.str());
 }
 
 
-void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
-	string sqlstart = "INSERT INTO messagelogs VALUES(NULL";
+void DBHandler::insertMessageLog(string gps_time, string type, string msg, int log_id) {
+	string sqlstart = "INSERT INTO messages VALUES(NULL";
 	string result;
 	stringstream sstm;
 	sstm << sqlstart
-		<< ", '" << gps_time << "', '" << type << "', '" << msg
-		<< "');";
+		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << log_id
+		<< ");";
 	updateTable(sstm.str());
 }
 
@@ -128,24 +126,24 @@ void DBHandler::insertWaypoint(int id, double lat, double lon) {
 }
 
 
-void DBHandler::insertServer(int id, string ship_name, string ship_pwd, string srv_addr) {
+void DBHandler::insertServer(int id, string boat_id, string boat_pwd, string srv_addr) {
 	string sqlstart = "INSERT INTO server VALUES(";
 	stringstream sstm;
 	sstm << sqlstart
 		<< id
-		<< ", '" << ship_name
-		<< "', '" << ship_pwd << "', '" << srv_addr
+		<< ", '" << boat_id
+		<< "', '" << boat_pwd << "', '" << srv_addr
 		<< "');";
 	updateTable(sstm.str());
 }
 
 
-void DBHandler::insertState(int id, string cfg_rev, string route_rev, int wpt_cur) {
+void DBHandler::insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur) {
 	string sqlstart = "INSERT INTO state VALUES(";
 	stringstream sstm;
 	sstm << sqlstart
 		<< id
-		<< ", '" << cfg_rev << "', '" << route_rev << "', " << wpt_cur
+		<< ", '" << cfg_rev << "', '" << rte_rev << "', '" << wpt_rev << "', " << wpt_cur
 		<< ");";
 	updateTable(sstm.str());
 }

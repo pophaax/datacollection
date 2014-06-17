@@ -58,7 +58,7 @@ public:
 	void insertDataLog(
 		string gps_time,
 		double gps_lat,
-		double gps_long,
+		double gps_lon,
 		double gps_spd,
 		double gps_head,
 		int gps_sat,
@@ -66,24 +66,22 @@ public:
 		int rc_cmd,
 		int ss_pos,
 		int rs_pos,
-		int cc_dtw,
-		int cc_btw,
-		int cc_cts,
+		double cc_dtw,
+		double cc_btw,
+		double cc_cts,
 		int cc_tack,
 		int ws_dir,
 		double ws_spd,
 		int ws_tmp,
-		string cfg_rev,
-		string route_rev,
 		int wpt_cur);
 
-	void insertMessageLog(string gps_time, string type, string msg);
+	void insertMessageLog(string gps_time, string type, string msg, int log_id);
 
 	void insertWaypoint(int id, double lat, double lon);
 
-	void insertServer(int id, string ship_name, string ship_pwd, string srv_addr);
+	void insertServer(int id, string boat_id, string boat_pwd, string srv_addr);
 
-	void insertState(int id, string cfg_rev, string route_rev, int wpt_cur);
+	void insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur);
 
 	//constructor
 	DBHandler(void);

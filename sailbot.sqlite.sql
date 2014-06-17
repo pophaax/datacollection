@@ -61,7 +61,7 @@ CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, -- remove log after
 	gps_time TIMESTAMP,
 	type VARCHAR,
 	msg VARCHAR,
-	log_id				-- FK
+	log_id INTEGER				-- FK
 );
 
 CREATE TABLE server (id INTEGER PRIMARY KEY AUTOINCREMENT,
