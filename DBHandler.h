@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "sqlite3.h"
 
 using namespace std;
@@ -95,8 +96,10 @@ public:
 	//close database
 	void closeDatabase();
 
-        //retrieve one value from a table as string
+    //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
+
+	vector<string> getTableIds(string table);
 };
 
 #endif

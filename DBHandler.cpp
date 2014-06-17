@@ -1,6 +1,6 @@
-#include <iomanip>
 #include "DBHandler.h"
-
+#include <iomanip>
+#include <cstdlib>
 
 void DBHandler::insertConfig(
 	int id,
@@ -224,4 +224,22 @@ string DBHandler::retriveCell(string table, string id, string column) {
     }
 
     return results[1];
+}
+
+
+vector<string> DBHandler::getTableIds(string table) {
+
+ 	stringstream sstm;
+	sstm << "SELECT id FROM " << table << ";";
+
+	int rows, columns;
+    char** results;
+    results = retriveFromTable(sstm.str(), rows, columns);
+
+    vector<string> ids;
+    for (int i = 1; i <= rows; i++) {
+    	ids.push_back(results[i]);
+    }
+
+    return ids;
 }
