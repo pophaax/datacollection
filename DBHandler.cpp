@@ -151,6 +151,7 @@ void DBHandler::insertState(int id, string cfg_rev, string rte_rev, string wpt_r
 
 
 DBHandler::DBHandler(void) {
+	m_latestDataLogId = -1;
 }
 
 DBHandler::~DBHandler(void) {
