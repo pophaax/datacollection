@@ -50,7 +50,8 @@ int main() {
 		db.insertServer(1, "ship_name", "ship_pwd", "srv_addr");
 
 		db.insertState(1, "cfg_rev", "route_rev", "wpt_rev", 1); */
-	
+	db.clearTable("messages");
+	db.insertMessageLog("gpstimezzz", "type", "msg2", 1);
 	} catch (const char * e) {
 		std::cout << e << "\n";
 	}

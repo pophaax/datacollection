@@ -100,6 +100,8 @@ public:
 	string retriveCell(string table, string id, string column);
 
 	vector<string> getTableIds(string table);
+
+	void clearTable(string table);
 };
 
 #endif

@@ -243,3 +243,10 @@ vector<string> DBHandler::getTableIds(string table) {
 
     return ids;
 }
+
+
+void DBHandler::clearTable(string table) {
+	stringstream sstm;
+	sstm << "DELETE FROM " << table << ";";
+	updateTable(sstm.str());
+}
