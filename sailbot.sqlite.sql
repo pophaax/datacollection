@@ -36,7 +36,7 @@ CREATE TABLE waypoints (id INTEGER PRIMARY KEY, -- no autoincrement to ensure a 
 	lon DOUBLE
 );
 
-CREATE TABLE datalogs (id INTEGER PRIMARY KEY, -- remove log after sync to minimize db size
+CREATE TABLE datalogs (id INTEGER PRIMARY KEY AUTOINCREMENT, -- remove log after sync to minimize db size
 	gps_time TIMESTAMP,
 	gps_lat DOUBLE,
 	gps_lon DOUBLE,

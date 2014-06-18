@@ -16,6 +16,7 @@ private:
 	int m_rc;
 	sqlite3 *m_db;
 	char *m_error;
+	int m_latestDataLogId;
 
 	//execute INSERT query and add new row into table, the sql string will be also stored in a synch table
 	void updateTable(string sqlINSERT);
@@ -76,7 +77,7 @@ public:
 		int ws_tmp,
 		int wpt_cur);
 
-	void insertMessageLog(string gps_time, string type, string msg, int log_id);
+	void insertMessageLog(string gps_time, string type, string msg);
 
 	void insertWaypoint(int id, double lat, double lon);
 

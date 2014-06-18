@@ -101,15 +101,16 @@ void DBHandler::insertDataLog(
 		<< ");";
 
 	updateTable(sstm.str());
+	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
 }
 
 
-void DBHandler::insertMessageLog(string gps_time, string type, string msg, int log_id) {
+void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
 	string sqlstart = "INSERT INTO messages VALUES(NULL";
 	string result;
 	stringstream sstm;
 	sstm << sqlstart
-		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << log_id
+		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << m_latestDataLogId
 		<< ");";
 	updateTable(sstm.str());
 }
