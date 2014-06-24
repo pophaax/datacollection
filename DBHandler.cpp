@@ -1,6 +1,9 @@
 #include "DBHandler.h"
+#include "JSON.h"
 #include <iomanip>
+#include <string>
 #include <cstdlib>
+
 
 void DBHandler::insertConfig(
 	int id,
@@ -252,3 +255,69 @@ void DBHandler::clearTable(string table) {
 	sstm << "DELETE FROM " << table << ";";
 	updateTable(sstm.str());
 }
+
+
+vector<string> DBHandler::getColumnNames(string table) {
+	stringstream sstm;
+	sstm << "SELECT * FROM " << table << ";";
+
+	int rows, columns;
+    char** results;
+    results = retriveFromTable(sstm.str(), rows, columns);
+
+    vector<string> names;
+    for (int i = 0; i < columns; i++) {
+    	names.push_back(results[i]);
+    }
+
+    return names;
+}
+
+
+string DBHandler::getLogs() {
+
+	vector<string> logIds;
+	logIds = getTableIds("datalogs");
+	JSONArray datalogs;
+	datalogs.setName("datalogs");
+	vector<string> datalogColumns = getColumnNames("datalogs");
+
+	for (unsigned int i = 0; i < logIds.size(); i++) {
+		JSONData data;
+
+		for (unsigned int j = 0; j < datalogColumns.size(); j++) {
+			data.add(datalogColumns[j], retriveCell("datalogs", logIds[i], datalogColumns[j]));
+		}
+		data.add("cfg_rev","cfg0001");
+		data.add("rte_rev","rte0001");
+		data.add("wpt_rev","wpt0001");
+		JSONBlock block;
+		block.add(data.toString());
+		datalogs.add(block.toString());
+	}
+
+	vector<string> msgIds;
+	msgIds = getTableIds("messages");
+	JSONArray messages;
+	messages.setName("messages");
+	vector<string> messageColumns = getColumnNames("messages");
+
+	for (unsigned int i = 0; i < msgIds.size(); i++) {
+		JSONData data;
+		for (unsigned int j = 0; j < messageColumns.size(); j++) {
+			data.add(messageColumns[j], retriveCell("messages", msgIds[i], messageColumns[j]));
+		}
+		JSONBlock block;
+		block.add(data.toString());
+		messages.add(block.toString());
+	}
+
+	JSONBlock main;
+	if(logIds.size() > 0)
+		main.add(datalogs.toString());
+	if(msgIds.size() > 0)
+		main.add(messages.toString());
+
+	return main.toString();
+}
+

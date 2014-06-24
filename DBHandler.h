@@ -103,6 +103,9 @@ public:
 	vector<string> getTableIds(string table);
 
 	void clearTable(string table);
+
+	vector<string> getColumnNames(string table);
+	string getLogs();
 };
 
 #endif

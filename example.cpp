@@ -26,11 +26,13 @@ int main() {
 		db.insertServer(1, "ship_name", "ship_pwd", "srv_addr");
 
 		db.insertState(1, "cfg_rev", "route_rev", "wpt_rev", 1); */
+	db.insertMessageLog("gpstimezzz", "type", "msg2");
+	db.insertMessageLog("gpstimezzz", "type", "msg2");
+	db.getLogs();
 	db.clearTable("messages");
-	db.insertMessageLog("gpstimezzz", "type", "msg2");
-	db.insertMessageLog("gpstimezzz", "type", "msg2");
 	} catch (const char * e) {
 		std::cout << e << "\n";
 	}
+
 //        std::cout << db.retriveCell("configs", "1", "sc_commandrunning") << "\n";
 }
