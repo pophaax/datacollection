@@ -84,4 +84,25 @@ class JSONData : public IEncoder {
 		vector<string> m_data;
 };
 
+/******************************************
+ *
+ *	JSONDECODER
+ *
+ ******************************************/
+
+class JSONDecode {
+
+private:
+	map<string, string> data;
+
+public:
+	JSONDecode();
+	~JSONDecode();
+
+	void addJSON(string json);
+	
+	string getData(string id);
+	int getSize();
+};
+
 #endif

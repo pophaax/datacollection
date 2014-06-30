@@ -4,6 +4,20 @@
 
 /******************************************
  *
+ *	Help functions
+ *
+ ******************************************/
+
+bool replace(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
+/******************************************
+ *
  *	JSONBLOCK
  *
  ******************************************/
@@ -95,14 +109,6 @@ string JSONArray::toString() {
 JSONData::JSONData() {}
 JSONData::~JSONData() {}
 
-bool replace(std::string& str, const std::string& from, const std::string& to) {
-    size_t start_pos = str.find(from);
-    if(start_pos == std::string::npos)
-        return false;
-    str.replace(start_pos, from.length(), to);
-    return true;
-}
-
 void JSONData::add(string name, string value) {;
 	stringstream sstm;
 	sstm << "\"" << name << "\":" << "\"" << value << "\"";
@@ -143,4 +149,40 @@ string JSONData::toString() {
 	}
 
 	return sstm.str();
+}
+
+/******************************************
+ *
+ *	JSONDECODER
+ *
+ ******************************************/
+
+JSONDecode::JSONDecode() {}
+JSONDecode::~JSONDecode() {}
+
+void JSONDecode::addJSON(string json) {
+	replace(json,"[","");
+	replace(json,"{","");
+	replace(json,"}","");
+	replace(json,"]","");
+	while(replace(json,"\"",""));
+
+	string token;
+	string id;
+	string value;
+	stringstream dstream(json);
+	while(getline(dstream, token, ',') ) {
+		stringstream tstream(token);
+		getline(tstream, id, ':');
+		getline(tstream, value, ':');
+		data.insert(pair<string,string>(id,value));
+	}
+}
+
+string JSONDecode::getData(string id) {
+	return data[id];
+}
+
+int JSONDecode::getSize() {
+	return data.size();
 }
