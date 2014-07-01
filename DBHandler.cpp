@@ -113,7 +113,7 @@ void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
 	string result;
 	stringstream sstm;
 	sstm << sqlstart
-		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << m_latestDataLogId
+		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId + 1)
 		<< ");";
 	updateTable(sstm.str());
 }
