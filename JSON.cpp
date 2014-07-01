@@ -161,10 +161,9 @@ JSONDecode::JSONDecode() {}
 JSONDecode::~JSONDecode() {}
 
 void JSONDecode::addJSON(string json) {
-	replace(json,"[","");
-	replace(json,"{","");
-	replace(json,"}","");
-	replace(json,"]","");
+	replace(json,"[{","");
+	replace(json,"}]","");
+	while(replace(json,"\\/","/"));
 	while(replace(json,"\"",""));
 
 	string token;

@@ -26,6 +26,62 @@ private:
 	char** retriveFromTable(string sqlSELECT, int &rows, int &columns);
 
 public:
+
+	void insertDataLog(
+		string gps_time,
+		double gps_lat,
+		double gps_lon,
+		double gps_spd,
+		double gps_head,
+		int gps_sat,
+		int sc_cmd,
+		int rc_cmd,
+		int ss_pos,
+		int rs_pos,
+		double cc_dtw,
+		double cc_btw,
+		double cc_cts,
+		int cc_tack,
+		int ws_dir,
+		double ws_spd,
+		int ws_tmp,
+		int wpt_cur);
+
+	void insertMessageLog(string gps_time, string type, string msg);
+
+	void insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur);
+
+	void updateConfig(string config);
+
+	void updateWaypoints(string route);
+
+	//constructor
+	DBHandler(void);
+
+	//destructor
+	~DBHandler(void);
+
+	//open database
+	void openDatabase(string fileName);
+
+	//close database
+	void closeDatabase();
+
+    //retrieve one value from a table as string
+	string retriveCell(string table, string id, string column);
+
+	vector<string> getTableIds(string table);
+
+	void clearTable(string table);
+
+	vector<string> getColumnData(string data, string table);
+
+	string getLogs();
+};
+
+#endif
+
+/*
 	void insertConfig(
 		int id,
 		int sc_cmd_clse,
@@ -56,56 +112,6 @@ public:
 		int ss_chan,
 		int ss_spd,
 		int ss_acc);
-
-	void insertDataLog(
-		string gps_time,
-		double gps_lat,
-		double gps_lon,
-		double gps_spd,
-		double gps_head,
-		int gps_sat,
-		int sc_cmd,
-		int rc_cmd,
-		int ss_pos,
-		int rs_pos,
-		double cc_dtw,
-		double cc_btw,
-		double cc_cts,
-		int cc_tack,
-		int ws_dir,
-		double ws_spd,
-		int ws_tmp,
-		int wpt_cur);
-
-	void insertMessageLog(string gps_time, string type, string msg);
-
 	void insertWaypoint(int id, double lat, double lon);
-
 	void insertServer(int id, string boat_id, string boat_pwd, string srv_addr);
-
-	void insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur);
-
-	//constructor
-	DBHandler(void);
-
-	//destructor
-	~DBHandler(void);
-
-	//open database
-	void openDatabase(string fileName);
-
-	//close database
-	void closeDatabase();
-
-    //retrieve one value from a table as string
-	string retriveCell(string table, string id, string column);
-
-	vector<string> getTableIds(string table);
-
-	void clearTable(string table);
-
-	vector<string> getColumnNames(string table);
-	string getLogs();
-};
-
-#endif
+*/
