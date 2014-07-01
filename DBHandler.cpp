@@ -133,7 +133,7 @@ vector<string> DBHandler::getColumnInfo(string info, string table) {
 
 
 DBHandler::DBHandler(void) {
-	m_latestDataLogId = -1;
+	m_latestDataLogId = 1;
 }
 
 DBHandler::~DBHandler(void) {
