@@ -48,7 +48,7 @@ void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
 	string result;
 	stringstream sstm;
 	sstm << sqlstart
-		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId + 1)
+		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId)
 		<< ");";
 	updateTable(sstm.str());
 }
@@ -68,18 +68,22 @@ void DBHandler::insertState(int id, string cfg_rev, string rte_rev, string wpt_r
 void DBHandler::updateConfig(string config) {
 	JSONDecode decoder;
 	decoder.addJSON(config);
-	vector<string> types = getColumnData("type", "configs");
-	vector<string> columns = getColumnData("name", "configs");
-	std::cout << "!!!!configs typesize: " << types.size() << ", colsize: "<< columns.size() << ", decodesize: " << decoder.getSize() << "\n";
-	for (int i = 0; i < decoder.getSize(); i++) {
-		std::cout << types[i] << "\n";
-		if (types[i].compare("VARCHAR") == 0) {
-			updateTable("UPDATE configs SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "' WHERE id=1;");
-			std::cout << "UPDATE configs SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "';\n";
+	vector<string> types = getColumnInfo("type", "configs");
+	vector<string> columns = getColumnInfo("name", "configs");
+	
+	if (decoder.hasNext()) {
+
+		if (decoder.getSize() != columns.size()) {
+			throw "DBHandler::updateConfig(), decoder and columns size mismatch.";
 		}
-		if (types[i].compare("INTEGER") == 0) {
-			updateTable("UPDATE configs SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";");
-			std::cout << "UPDATE configs SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";\n";
+
+		for (int i = 0; i < decoder.getSize(); i++) {
+			if (types[i].compare("VARCHAR") == 0) {
+				updateTable("UPDATE configs SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "' WHERE id=1;");
+			}
+			if (types[i].compare("INTEGER") == 0) {
+				updateTable("UPDATE configs SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";");
+			}
 		}
 	}
 }
@@ -88,42 +92,41 @@ void DBHandler::updateConfig(string config) {
 void DBHandler::updateWaypoints(string route) {
 	JSONDecode decoder;
 	decoder.addJSON(route);
-	vector<string> types = getColumnData("type", "waypoints");
-	vector<string> columns = getColumnData("name", "waypoints");
-	std::cout << "!!!!wps typesize: " << types.size() << ", colsize: "<< columns.size() << ", decodesize: " << decoder.getSize() << "\n";
-	std::cout << decoder.getData("wpt_id") << "\n";
-	for (int i = 2; i < decoder.getSize(); i++) { //i=2???
-/*		std::cout << types[i] << "\n";
-		if (types[i].compare("VARCHAR") == 0) {
-			updateTable("UPDATE waypoints SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "';");
-			std::cout << "UPDATE waypoints SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "';\n";
-		}*/
-		if (types[i].compare("INTEGER") == 0) {
-			updateTable("UPDATE waypoints SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";");
-			std::cout << "UPDATE waypoints SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";\n";
-		}
-		if (types[i].compare("DOUBLE") == 0) {
-			updateTable("UPDATE waypoints SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";");
-			std::cout << "UPDATE waypoints SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";\n";
-		}
-	}
+	vector<string> types = getColumnInfo("type", "waypoints");
+	vector<string> columns = getColumnInfo("name", "waypoints");
 
+	clearTable("waypoints");
+	while(decoder.hasNext()) {
+
+		if (decoder.getSize() != columns.size()) {
+			throw "DBHandler::updateConfig(), decoder and columns size mismatch.";
+		}
+
+		std::string values = "";
+		for (int i = 0; i < decoder.getSize(); i++) {
+			if (i != 0) {
+				values += ", ";
+			}
+			values += decoder.getData(columns[i]);
+		}
+		updateTable("INSERT INTO waypoints VALUES(" + values + ");");
+	}
 }
 
-vector<string> DBHandler::getColumnData(string data, string table) {
+vector<string> DBHandler::getColumnInfo(string info, string table) {
 	int rows, columns;
     char** results;
     results = retriveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
     vector<string> types;
-    int typeIndex = 0;
+    int infoIndex = 0;
     for (int i = 0; i < columns; i++) {
-    	if (std::string(data).compare(results[i]) == 0) {
-    		typeIndex = i;
+    	if (std::string(info).compare(results[i]) == 0) {
+    		infoIndex = i;
     	}
     }
 
 	for (int i = 1; i < rows+1; i++) {
-		types.push_back(results[i * columns + typeIndex]);
+		types.push_back(results[i * columns + infoIndex]);
 	}
     return types;
 }
@@ -164,6 +167,7 @@ void DBHandler::updateTable(string sqlINSERT) {
 		throw errorStream.str().c_str();
 	}
 }
+
 
 char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 		int &columns) {
@@ -239,7 +243,7 @@ string DBHandler::getLogs() {
 	logIds = getTableIds("datalogs");
 	JSONArray datalogs;
 	datalogs.setName("datalogs");
-	vector<string> datalogColumns = getColumnData("name", "datalogs");
+	vector<string> datalogColumns = getColumnInfo("name", "datalogs");
 
 	for (unsigned int i = 0; i < logIds.size(); i++) {
 		JSONData data;
@@ -259,7 +263,7 @@ string DBHandler::getLogs() {
 	msgIds = getTableIds("messages");
 	JSONArray messages;
 	messages.setName("messages");
-	vector<string> messageColumns = getColumnData("name", "messages");
+	vector<string> messageColumns = getColumnInfo("name", "messages");
 
 	for (unsigned int i = 0; i < msgIds.size(); i++) {
 		JSONData data;

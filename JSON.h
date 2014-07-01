@@ -104,6 +104,7 @@ public:
 	bool hasNext();
 	string getData(string id);
 	int getSize();
+	bool isEmpty();
 };
 
 #endif

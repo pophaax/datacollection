@@ -25,6 +25,12 @@ private:
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retriveFromTable(string sqlSELECT, int &rows, int &columns);
 
+	//gets the id column from a given table
+	vector<string> getTableIds(string table);
+
+	//gets information(for instance: name/datatype) about all columns
+	vector<string> getColumnInfo(string info, string table);
+
 public:
 
 	void insertDataLog(
@@ -70,11 +76,7 @@ public:
     //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
 
-	vector<string> getTableIds(string table);
-
 	void clearTable(string table);
-
-	vector<string> getColumnData(string data, string table);
 
 	string getLogs();
 };

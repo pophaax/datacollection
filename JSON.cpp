@@ -208,3 +208,7 @@ string JSONDecode::getData(string id) {
 int JSONDecode::getSize() {
 	return data.at(current-1).size();
 }
+
+bool JSONDecode::isEmpty() {
+	return data.empty();
+}
