@@ -157,7 +157,9 @@ string JSONData::toString() {
  *
  ******************************************/
 
-JSONDecode::JSONDecode() {}
+JSONDecode::JSONDecode() {
+	current = 0;
+}
 JSONDecode::~JSONDecode() {}
 
 void JSONDecode::addJSON(string json) {
@@ -165,23 +167,44 @@ void JSONDecode::addJSON(string json) {
 	replace(json,"}]","");
 	while(replace(json,"\\/","/"));
 	while(replace(json,"\"",""));
+	while(replace(json,"},{","&"));
 
-	string token;
+	string atok;
+	string etok;
 	string id;
 	string value;
-	stringstream dstream(json);
-	while(getline(dstream, token, ',') ) {
-		stringstream tstream(token);
-		getline(tstream, id, ':');
-		getline(tstream, value, ':');
-		data.insert(pair<string,string>(id,value));
+	stringstream astrm(json);
+
+	while(getline(astrm, atok, '&') ) {
+		stringstream estrm(atok);
+		map<string, string> tmp;
+		while(getline(estrm, etok, ',') ) {
+			stringstream dstrm(etok);
+			getline(dstrm, id, ':');
+			getline(dstrm, value, ':');
+
+			tmp.insert(pair<string,string>(id,value));
+		}
+		data.push_back(tmp);
 	}
 }
 
+bool JSONDecode::hasNext() {
+	bool result = false;
+	if(data.size() > current) {
+		current++;
+		result = true;
+	}
+	return result;
+}
+
 string JSONDecode::getData(string id) {
-	return data[id];
+	if(data.empty()) {
+		return "";
+	}
+	return data.at(current-1)[id];
 }
 
 int JSONDecode::getSize() {
-	return data.size();
+	return data.at(current-1).size();
 }

@@ -93,14 +93,15 @@ class JSONData : public IEncoder {
 class JSONDecode {
 
 private:
-	map<string, string> data;
+	vector< map<string, string> > data;
+	unsigned int current;
 
 public:
 	JSONDecode();
 	~JSONDecode();
 
 	void addJSON(string json);
-	
+	bool hasNext();
 	string getData(string id);
 	int getSize();
 };
