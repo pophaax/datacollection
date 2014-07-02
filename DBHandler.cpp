@@ -99,7 +99,7 @@ void DBHandler::updateWaypoints(string route) {
 	while(decoder.hasNext()) {
 
 		if (decoder.getSize() != columns.size()) {
-			throw "DBHandler::updateConfig(), decoder and columns size mismatch.";
+			throw "DBHandler::updateWaypoints(), decoder and columns size mismatch.";
 		}
 
 		std::string values = "";
@@ -285,6 +285,13 @@ string DBHandler::getLogs() {
 }
 
 
+void DBHandler::removeLogs(string lines) {
+	JSONDecode decoder;
+	decoder.addJSON(lines);
+	while (decoder.hasNext()) {
+		updateTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
+	}
+}
 
 
 

@@ -79,6 +79,9 @@ public:
 	void clearTable(string table);
 
 	string getLogs();
+
+	void removeLogs(string lines);
+
 };
 
 #endif
