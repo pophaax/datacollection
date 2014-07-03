@@ -80,6 +80,8 @@ public:
 
 	void removeLogs(string lines);
 
+	string getMinIdFromTable(string table);
+	void deleteRow(string table, string id);
 };
 
 #endif

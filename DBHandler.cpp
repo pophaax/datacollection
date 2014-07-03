@@ -65,8 +65,7 @@ bool DBHandler::revChanged(string toCheck, string serverRevs) {
 		throw "DBHandler::configChanged(), coudn't find "+ toCheck + "in JSONdata.";
 	}
 	if (getTableIds("state").size() == 0) {
-		//try to get revs from server
-		throw "DBHandler::configChanged(), state table empty.";
+		return true;
 	} else {
 		localConfig = retriveCell("state", "1", toCheck);
 	}
@@ -287,4 +286,34 @@ void DBHandler::removeLogs(string lines) {
 	while (decoder.hasNext()) {
 		queryTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
 	}
+}
+
+
+string DBHandler::getMinIdFromTable(string table) {
+ 	stringstream sstm;
+	sstm << "SELECT MIN(id) FROM " << table << ";";
+
+	int rows, columns;
+    char** results;
+    results = retriveFromTable(sstm.str(), rows, columns);
+
+    if (columns < 1) {
+		stringstream errorStream;
+		errorStream << "DBHandler::getMinIdFromtable(), no columns from Query: " << sstm.str();
+    	throw errorStream.str().c_str();
+    }
+
+    if (rows < 1) {
+		stringstream errorStream;
+		errorStream << "DBHandler::getMinIdFromtable(), no rows from Query: " << sstm.str();
+    	throw errorStream.str().c_str();
+    }
+
+    return results[1];
+
+}
+
+
+void DBHandler::deleteRow(string table, string id) {
+	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
 }
