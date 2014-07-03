@@ -153,7 +153,7 @@ void DBHandler::queryTable(string sqlINSERT) {
 
 	if (m_rc) {
 		stringstream errorStream;
-		errorStream << "DBHandler::updateTable(), " << sqlite3_errmsg(m_db);
+		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
 		throw errorStream.str().c_str();
