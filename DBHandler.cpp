@@ -38,7 +38,7 @@ void DBHandler::insertDataLog(
 		<< ", "  << wpt_cur
 		<< ");";
 
-	updateTable(sstm.str());
+	queryTable(sstm.str());
 	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
 }
 
@@ -50,66 +50,59 @@ void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
 	sstm << sqlstart
 		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId)
 		<< ");";
-	updateTable(sstm.str());
+	queryTable(sstm.str());
 }
 
 
-void DBHandler::insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur) {
-	string sqlstart = "INSERT INTO state VALUES(";
-	stringstream sstm;
-	sstm << sqlstart
-		<< id
-		<< ", '" << cfg_rev << "', '" << rte_rev << "', '" << wpt_rev << "', " << wpt_cur
-		<< ");";
-	updateTable(sstm.str());
-}
 
-
-void DBHandler::updateConfig(string config) {
+bool DBHandler::revChanged(string toCheck, string serverRevs) {
 	JSONDecode decoder;
-	decoder.addJSON(config);
-	vector<string> types = getColumnInfo("type", "configs");
-	vector<string> columns = getColumnInfo("name", "configs");
-	
+	decoder.addJSON(serverRevs);
+	string serverConfig, localConfig;
 	if (decoder.hasNext()) {
-
-		if (decoder.getSize() != columns.size()) {
-			throw "DBHandler::updateConfig(), decoder and columns size mismatch.";
-		}
-
-		for (int i = 0; i < decoder.getSize(); i++) {
-			if (types[i].compare("VARCHAR") == 0) {
-				updateTable("UPDATE configs SET " + columns[i] + " = '" + decoder.getData(columns[i]) + "' WHERE id=1;");
-			}
-			if (types[i].compare("INTEGER") == 0) {
-				updateTable("UPDATE configs SET " + columns[i] + " = " + decoder.getData(columns[i]) + ";");
-			}
-		}
+		serverConfig = decoder.getData(toCheck);
+	} else {
+		throw "DBHandler::configChanged(), coudn't find "+ toCheck + "in JSONdata.";
 	}
+	if (getTableIds("state").size() == 0) {
+		//try to get revs from server
+		throw "DBHandler::configChanged(), state table empty.";
+	} else {
+		localConfig = retriveCell("state", "1", toCheck);
+	}
+
+	if ( serverConfig.compare(localConfig) != 0 ) {
+		return true;
+	}
+	return false;
 }
 
 
-void DBHandler::updateWaypoints(string route) {
+void DBHandler::updateTable(string table, string data) {
 	JSONDecode decoder;
-	decoder.addJSON(route);
-	vector<string> types = getColumnInfo("type", "waypoints");
-	vector<string> columns = getColumnInfo("name", "waypoints");
+	decoder.addJSON(data);
+	vector<string> types = getColumnInfo("type", table);
+	vector<string> columns = getColumnInfo("name", table);
 
-	clearTable("waypoints");
+	clearTable(table);
 	while(decoder.hasNext()) {
 
 		if (decoder.getSize() != columns.size()) {
-			throw "DBHandler::updateWaypoints(), decoder and columns size mismatch.";
+			throw ("DBHandler::updateTable(), decoder and columns size mismatch for table: " + table).c_str();
 		}
 
 		std::string values = "";
-		for (int i = 0; i < decoder.getSize(); i++) {
-			if (i != 0) {
+		for (int i = 0; i < columns.size(); i++) {
+			if (i > 0) {
 				values += ", ";
 			}
-			values += decoder.getData(columns[i]);
+			if (types[i].compare("VARCHAR") == 0) {
+				values = values + "'" + decoder.getData(columns[i]) + "'";
+			} else {
+				values += decoder.getData(columns[i]);
+			}
 		}
-		updateTable("INSERT INTO waypoints VALUES(" + values + ");");
+		queryTable("INSERT INTO " + table + " VALUES(" + values + ");");
 	}
 }
 
@@ -156,7 +149,7 @@ void DBHandler::closeDatabase(void) {
 }
 
 
-void DBHandler::updateTable(string sqlINSERT) {
+void DBHandler::queryTable(string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 	if (m_rc) {
@@ -233,7 +226,7 @@ vector<string> DBHandler::getTableIds(string table) {
 void DBHandler::clearTable(string table) {
 	stringstream sstm;
 	sstm << "DELETE FROM " << table << ";";
-	updateTable(sstm.str());
+	queryTable(sstm.str());
 }
 
 
@@ -251,9 +244,12 @@ string DBHandler::getLogs() {
 		for (unsigned int j = 0; j < datalogColumns.size(); j++) {
 			data.add(datalogColumns[j], retriveCell("datalogs", logIds[i], datalogColumns[j]));
 		}
-		data.add("cfg_rev","cfg0001");
-		data.add("rte_rev","rte0001");
-		data.add("wpt_rev","wpt0001");
+
+		vector<string> stateColumns = getColumnInfo("name", "state");
+		for (unsigned int j = 0; j < stateColumns.size(); j++) {
+			data.add(stateColumns[j], retriveCell("state", "1", stateColumns[j]));
+		}
+
 		JSONBlock block;
 		block.add(data.toString());
 		datalogs.add(block.toString());
@@ -289,96 +285,6 @@ void DBHandler::removeLogs(string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
-		updateTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
+		queryTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
 	}
 }
-
-
-
-
-
-
-/*
-void DBHandler::insertConfig(
-	int id,
-	int sc_cmd_clse,
-	int sc_cmd_beam,
-	int sc_cmd_brd,
-	int sc_cmd_run,
-	int sc_ang_beam,
-	int sc_ang_brd,
-	int sc_ang_run,
-
-	int rc_cmd_xtrm,
-	int rc_cmd_med,
-	int rc_cmd_sml,
-	int rc_cmd_mid,
-	int rc_ang_med,
-	int rc_ang_sml,
-	int rc_ang_mid,
-
-	int cc_ang_tack,
-	int cc_ang_sect,
-
-	string ws_modl,
-	int ws_chan,
-	string ws_port,
-	int ws_baud,
-	int ws_buff,
-
-	string mc_port,
-
-	int rs_chan,
-	int rs_spd,
-	int rs_acc,
-	int ss_chan,
-	int ss_spd,
-	int ss_acc) {
-
-	string sqlstart = "INSERT INTO configs VALUES(";
-	stringstream sstm;
-
-	sstm << sqlstart
-		<< id
-		<< ", " << sc_cmd_clse << ", " << sc_cmd_beam << ", " << sc_cmd_brd << ", " << sc_cmd_run
-		<< ", " << sc_ang_beam << ", " << sc_ang_brd << ", " << sc_ang_run
-		
-		<< ", " << rc_cmd_xtrm << ", " << rc_cmd_med << ", " << rc_cmd_sml << ", " << rc_cmd_mid
-		<< ", " << rc_ang_med << ", " << rc_ang_sml << ", " << rc_ang_mid
-
-		<< ", " << cc_ang_tack << ", " << cc_ang_sect
-
-		<< ", '" << ws_modl << "', " << ws_chan << ", '" << ws_port << "', " << ws_baud << ", "  << ws_buff
-
-		<< ", '" << mc_port
-
-		<< "', " << rs_chan << ", " << rs_spd << ", " << rs_acc
-		<< ", " << ss_chan << ", " << ss_spd << ", " << ss_acc
-		<< ");";
-
-	updateTable(sstm.str());
-}
-
-
-void DBHandler::insertWaypoint(int id, double lat, double lon) {
-	string sqlstart = "INSERT INTO waypoints VALUES(";
-	stringstream sstm;
-	sstm << sqlstart
-		<< id
-		<< ", " << std::setprecision(10) << lat << ", " << lon
-		<< ");";
-	updateTable(sstm.str());
-}
-
-
-void DBHandler::insertServer(int id, string boat_id, string boat_pwd, string srv_addr) {
-	string sqlstart = "INSERT INTO server VALUES(";
-	stringstream sstm;
-	sstm << sqlstart
-		<< id
-		<< ", '" << boat_id
-		<< "', '" << boat_pwd << "', '" << srv_addr
-		<< "');";
-	updateTable(sstm.str());
-}
-*/

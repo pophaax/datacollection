@@ -19,7 +19,7 @@ private:
 	int m_latestDataLogId;
 
 	//execute INSERT query and add new row into table, the sql string will be also stored in a synch table
-	void updateTable(string sqlINSERT);
+	void queryTable(string sqlINSERT);
 
 	//retrive data from given table/tables, return value is a C++ 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
@@ -30,6 +30,8 @@ private:
 
 	//gets information(for instance: name/datatype) about all columns
 	vector<string> getColumnInfo(string info, string table);
+
+	void clearTable(string table);
 
 public:
 
@@ -55,11 +57,9 @@ public:
 
 	void insertMessageLog(string gps_time, string type, string msg);
 
-	void insertState(int id, string cfg_rev, string rte_rev, string wpt_rev, int wpt_cur);
+	bool revChanged(string toCheck, string serverRevs);
 
-	void updateConfig(string config);
-
-	void updateWaypoints(string route);
+	void updateTable(string table, string data);
 
 	//constructor
 	DBHandler(void);
@@ -76,8 +76,6 @@ public:
     //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
 
-	void clearTable(string table);
-
 	string getLogs();
 
 	void removeLogs(string lines);
@@ -85,38 +83,3 @@ public:
 };
 
 #endif
-
-/*
-	void insertConfig(
-		int id,
-		int sc_cmd_clse,
-		int sc_cmd_beam,
-		int sc_cmd_brd,
-		int sc_cmd_run,
-		int sc_ang_beam,
-		int sc_ang_brd,
-		int sc_ang_run,
-		int rc_cmd_xtrm,
-		int rc_cmd_med,
-		int rc_cmd_sml,
-		int rc_cmd_mid,
-		int rc_ang_med,
-		int rc_ang_sml,
-		int rc_ang_mid,
-		int cc_ang_tack,
-		int cc_ang_sect,
-		string ws_modl,
-		int ws_chan,
-		string ws_port,
-		int ws_baud,
-		int ws_buff,
-		string mc_port,
-		int rs_chan,
-		int rs_spd,
-		int rs_acc,
-		int ss_chan,
-		int ss_spd,
-		int ss_acc);
-	void insertWaypoint(int id, double lat, double lon);
-	void insertServer(int id, string boat_id, string boat_pwd, string srv_addr);
-*/
