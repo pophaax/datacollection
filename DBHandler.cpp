@@ -309,7 +309,7 @@ string DBHandler::getMinIdFromTable(string table) {
     	throw errorStream.str().c_str();
     }
 
-    if (rows * columns == 1) {
+    if (rows * columns < 1) {
     	return "";
     }
 
