@@ -302,18 +302,6 @@ string DBHandler::getMinIdFromTable(string table) {
     char** results;
     results = retriveFromTable(sstm.str(), rows, columns);
 
-    if (columns < 1) {
-		stringstream errorStream;
-		errorStream << "DBHandler::getMinIdFromtable(), no columns from Query: " << sstm.str();
-		throw errorStream.str().c_str();
-	}
-
-    if (rows < 1) {
-		stringstream errorStream;
-		errorStream << "DBHandler::getMinIdFromtable(), no rows from Query: " << sstm.str();
-    	throw errorStream.str().c_str();
-    }
-
     if (rows * columns < 1) {
     	return "";
     }
