@@ -62,7 +62,7 @@ bool DBHandler::revChanged(string toCheck, string serverRevs) {
 	if (decoder.hasNext()) {
 		serverConfig = decoder.getData(toCheck);
 	} else {
-		throw "DBHandler::configChanged(), coudn't find "+ toCheck + "in JSONdata.";
+		throw ("DBHandler::configChanged(), coudn't find "+ toCheck + "in JSONdata.").c_str();
 	}
 	if (getTableIds("state").size() == 0) {
 		return true;
