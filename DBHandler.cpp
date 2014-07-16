@@ -91,7 +91,7 @@ void DBHandler::updateTable(string table, string data) {
 		}
 
 		std::string values = "";
-		for (int i = 0; i < columns.size(); i++) {
+		for (unsigned int i = 0; i < columns.size(); i++) {
 			if (i > 0) {
 				values += ", ";
 			}
@@ -201,6 +201,11 @@ string DBHandler::retriveCell(string table, string id, string column) {
     }
 
     return results[1];
+}
+
+
+int DBHandler::retriveCellAsInt(string table, string id, string column) {
+	return atoi(retriveCell(table, id, column).c_str());
 }
 
 

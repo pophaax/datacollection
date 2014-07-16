@@ -8,7 +8,7 @@
 #######################################################
 
 CC = g++
-FLAGS = -Wall -pedantic -Werror
+FLAGS = -pedantic -Werror
 LIBS = -lsqlite3
 
 SOURCES_DB = DBHandler.cpp

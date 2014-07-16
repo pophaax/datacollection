@@ -31,8 +31,6 @@ private:
 	//gets information(for instance: name/datatype) about all columns
 	vector<string> getColumnInfo(string info, string table);
 
-	void clearTable(string table);
-
 public:
 
 	void insertDataLog(
@@ -61,6 +59,8 @@ public:
 
 	void updateTable(string table, string data);
 
+	void clearTable(string table);
+
 	//constructor
 	DBHandler(void);
 
@@ -75,6 +75,7 @@ public:
 
     //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
+	int retriveCellAsInt(string table, string id, string column);
 
 	string getLogs();
 
