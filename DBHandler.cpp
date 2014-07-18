@@ -52,10 +52,9 @@ void DBHandler::insertDataLog(
 	int ws_tmp,
 	int wpt_cur) {
 
-	string sqlstart = "INSERT INTO datalogs VALUES(NULL";
 	stringstream sstm;
 
-	sstm << sqlstart
+	sstm << "INSERT INTO datalogs VALUES(NULL"
 		<< ", '" << gps_time
 		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
@@ -70,10 +69,9 @@ void DBHandler::insertDataLog(
 
 
 void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
-	string sqlstart = "INSERT INTO messages VALUES(NULL";
 	string result;
 	stringstream sstm;
-	sstm << sqlstart
+	sstm << "INSERT INTO messages VALUES(NULL"
 		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId)
 		<< ");";
 	queryTable(sstm.str());
@@ -133,23 +131,21 @@ void DBHandler::updateTable(string table, string data) {
 
 
 string DBHandler::retriveCell(string table, string id, string column) {
-
- 	stringstream sstm;
-	sstm << "SELECT " << column << " FROM " << table << " WHERE id=" << id << ";";
+	string query = "SELECT " + column + " FROM " + table +" WHERE id=" + id + ";";
 
 	int rows, columns;
     char** results;
-    results = retriveFromTable(sstm.str(), rows, columns);
+    results = retriveFromTable(query, rows, columns);
 
     if (columns < 1) {
 		stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no columns from Query: " << sstm.str();
+		errorStream << "DBHandler::retriveCell(), no columns from Query: " << query;
     	throw errorStream.str().c_str();
     }
 
     if (rows < 1) {
 		stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no rows from Query: " << sstm.str();
+		errorStream << "DBHandler::retriveCell(), no rows from Query: " << query;
     	throw errorStream.str().c_str();
     }
 
@@ -163,9 +159,7 @@ int DBHandler::retriveCellAsInt(string table, string id, string column) {
 
 
 void DBHandler::clearTable(string table) {
-	stringstream sstm;
-	sstm << "DELETE FROM " << table << ";";
-	queryTable(sstm.str());
+	queryTable("DELETE FROM " + table + ";");
 }
 
 
@@ -230,12 +224,9 @@ void DBHandler::removeLogs(string lines) {
 
 
 string DBHandler::getMinIdFromTable(string table) {
- 	stringstream sstm;
-	sstm << "SELECT MIN(id) FROM " << table << ";";
-
 	int rows, columns;
     char** results;
-    results = retriveFromTable(sstm.str(), rows, columns);
+    results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
 
     if (rows * columns < 1) {
     	return "";
@@ -293,13 +284,9 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 
 
 vector<string> DBHandler::getTableIds(string table) {
-
- 	stringstream sstm;
-	sstm << "SELECT id FROM " << table << ";";
-
 	int rows, columns;
     char** results;
-    results = retriveFromTable(sstm.str(), rows, columns);
+    results = retriveFromTable("SELECT id FROM " + table + ";", rows, columns);
 
     vector<string> ids;
     for (int i = 1; i <= rows; i++) {
