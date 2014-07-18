@@ -5,6 +5,32 @@
 #include <cstdlib>
 
 
+DBHandler::DBHandler(void) {
+	m_latestDataLogId = 1;
+}
+
+
+DBHandler::~DBHandler(void) {
+}
+
+
+void DBHandler::openDatabase(string fileName) {
+	m_rc = sqlite3_open(fileName.c_str(), &m_db);
+
+	if (m_rc) {
+		stringstream errorStream;
+		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
+		sqlite3_free(m_error);
+
+		throw errorStream.str().c_str();
+	}
+}
+
+
+void DBHandler::closeDatabase(void) {
+	sqlite3_close(m_db);
+}
+
 
 void DBHandler::insertDataLog(
 	string gps_time,
@@ -62,7 +88,7 @@ bool DBHandler::revChanged(string toCheck, string serverRevs) {
 	if (decoder.hasNext()) {
 		serverConfig = decoder.getData(toCheck);
 	} else {
-		throw ("DBHandler::configChanged(), coudn't find "+ toCheck + "in JSONdata.").c_str();
+		throw ("DBHandler::revChanged(), coudn't find "+ toCheck + "in JSONdata.").c_str();
 	}
 	if (getTableIds("state").size() == 0) {
 		return true;
@@ -105,79 +131,6 @@ void DBHandler::updateTable(string table, string data) {
 	}
 }
 
-vector<string> DBHandler::getColumnInfo(string info, string table) {
-	int rows, columns;
-    char** results;
-    results = retriveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
-    vector<string> types;
-    int infoIndex = 0;
-    for (int i = 0; i < columns; i++) {
-    	if (std::string(info).compare(results[i]) == 0) {
-    		infoIndex = i;
-    	}
-    }
-
-	for (int i = 1; i < rows+1; i++) {
-		types.push_back(results[i * columns + infoIndex]);
-	}
-    return types;
-}
-
-
-DBHandler::DBHandler(void) {
-	m_latestDataLogId = 1;
-}
-
-DBHandler::~DBHandler(void) {
-}
-
-void DBHandler::openDatabase(string fileName) {
-	m_rc = sqlite3_open(fileName.c_str(), &m_db);
-
-	if (m_rc) {
-		stringstream errorStream;
-		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
-
-		throw errorStream.str().c_str();
-	}
-}
-
-void DBHandler::closeDatabase(void) {
-	sqlite3_close(m_db);
-}
-
-
-void DBHandler::queryTable(string sqlINSERT) {
-	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-
-	if (m_rc) {
-		stringstream errorStream;
-		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
-
-		throw errorStream.str().c_str();
-	}
-}
-
-
-char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
-		int &columns) {
-	char **results = NULL;
-
-	sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
-			&m_error);
-
-	if (m_rc) {
-		stringstream errorStream;
-		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
-
-		throw errorStream.str().c_str();
-	}
-
-	return results;
-}
 
 string DBHandler::retriveCell(string table, string id, string column) {
 
@@ -206,24 +159,6 @@ string DBHandler::retriveCell(string table, string id, string column) {
 
 int DBHandler::retriveCellAsInt(string table, string id, string column) {
 	return atoi(retriveCell(table, id, column).c_str());
-}
-
-
-vector<string> DBHandler::getTableIds(string table) {
-
- 	stringstream sstm;
-	sstm << "SELECT id FROM " << table << ";";
-
-	int rows, columns;
-    char** results;
-    results = retriveFromTable(sstm.str(), rows, columns);
-
-    vector<string> ids;
-    for (int i = 1; i <= rows; i++) {
-    	ids.push_back(results[i]);
-    }
-
-    return ids;
 }
 
 
@@ -313,4 +248,83 @@ string DBHandler::getMinIdFromTable(string table) {
 
 void DBHandler::deleteRow(string table, string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////
+// private helpers
+////////////////////////////////////////////////////////////////////
+
+
+
+void DBHandler::queryTable(string sqlINSERT) {
+	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+
+	if (m_rc) {
+		stringstream errorStream;
+		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
+		sqlite3_free(m_error);
+
+		throw errorStream.str().c_str();
+	}
+}
+
+
+char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
+		int &columns) {
+	char **results = NULL;
+
+	sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
+			&m_error);
+
+	if (m_rc) {
+		stringstream errorStream;
+		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
+		sqlite3_free(m_error);
+
+		throw errorStream.str().c_str();
+	}
+
+	return results;
+}
+
+
+vector<string> DBHandler::getTableIds(string table) {
+
+ 	stringstream sstm;
+	sstm << "SELECT id FROM " << table << ";";
+
+	int rows, columns;
+    char** results;
+    results = retriveFromTable(sstm.str(), rows, columns);
+
+    vector<string> ids;
+    for (int i = 1; i <= rows; i++) {
+    	ids.push_back(results[i]);
+    }
+
+    return ids;
+}
+
+
+
+vector<string> DBHandler::getColumnInfo(string info, string table) {
+	int rows, columns;
+    char** results;
+    results = retriveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
+    vector<string> types;
+    int infoIndex = 0;
+    for (int i = 0; i < columns; i++) {
+    	if (std::string(info).compare(results[i]) == 0) {
+    		infoIndex = i;
+    	}
+    }
+
+	for (int i = 1; i < rows+1; i++) {
+		types.push_back(results[i * columns + infoIndex]);
+	}
+    return types;
 }

@@ -18,10 +18,10 @@ private:
 	char *m_error;
 	int m_latestDataLogId;
 
-	//execute INSERT query and add new row into table, the sql string will be also stored in a synch table
+	//execute INSERT query and add new row into table
 	void queryTable(string sqlINSERT);
 
-	//retrive data from given table/tables, return value is a C++ 2D char array
+	//retrive data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retriveFromTable(string sqlSELECT, int &rows, int &columns);
 
@@ -32,6 +32,12 @@ private:
 	vector<string> getColumnInfo(string info, string table);
 
 public:
+
+	DBHandler(void);
+	~DBHandler(void);
+
+	void openDatabase(string fileName);
+	void closeDatabase();
 
 	void insertDataLog(
 		string gps_time,
@@ -61,20 +67,10 @@ public:
 
 	void clearTable(string table);
 
-	//constructor
-	DBHandler(void);
-
-	//destructor
-	~DBHandler(void);
-
-	//open database
-	void openDatabase(string fileName);
-
-	//close database
-	void closeDatabase();
-
     //retrieve one value from a table as string
 	string retriveCell(string table, string id, string column);
+
+    //retrieve one value from a table as integer
 	int retriveCellAsInt(string table, string id, string column);
 
 	string getLogs();
@@ -82,6 +78,7 @@ public:
 	void removeLogs(string lines);
 
 	string getMinIdFromTable(string table);
+
 	void deleteRow(string table, string id);
 };
 

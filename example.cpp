@@ -29,7 +29,7 @@ int main() {
 			db.insertState(1, "cfg_rev", "route_rev", "wpt_rev", 1); */
 		db.insertMessageLog("gpstimezzz", "type", "msg2");
 		db.insertMessageLog("gpstimezzz", "type", "msg2");
-		db.getLogs();
+		std::cout << db.getLogs() << "\n";
 		db.clearTable("messages");
 	} catch (const char * e) {
 		std::cout << e << "\n";
