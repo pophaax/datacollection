@@ -48,8 +48,8 @@ void DBHandler::insertDataLog(
 	double cc_cts,
 	int cc_tack,
 	int ws_dir,
-	double ws_spd,
-	int ws_tmp,
+	float ws_spd,
+	float ws_tmp,
 	int wpt_cur) {
 
 	stringstream sstm;
@@ -218,6 +218,7 @@ void DBHandler::removeLogs(string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
+		std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id") << "\n";
 		queryTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
 	}
 }
@@ -254,7 +255,7 @@ void DBHandler::deleteRow(string table, string id) {
 void DBHandler::queryTable(string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
-	if (m_rc) {
+	if (m_error != NULL) {
 		stringstream errorStream;
 		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
@@ -271,7 +272,7 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 	sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
 			&m_error);
 
-	if (m_rc) {
+	if (m_error != NULL) {
 		stringstream errorStream;
 		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);

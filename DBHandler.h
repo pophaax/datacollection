@@ -55,8 +55,8 @@ public:
 		double cc_cts,
 		int cc_tack,
 		int ws_dir,
-		double ws_spd,
-		int ws_tmp,
+		float ws_spd,
+		float ws_tmp,
 		int wpt_cur);
 
 	void insertMessageLog(string gps_time, string type, string msg);
