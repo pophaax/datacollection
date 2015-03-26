@@ -33,3 +33,5 @@ $(FILE_DB) : $(SOURCES_DB) $(HEADERS_DB)
 example : $(SOURCES) $(HEADERS) example.cpp
 	$(CC) $(SOURCES) example.cpp $(FLAGS) $(LIBS) -o example
 
+clean :
+	rm -f example
