@@ -34,4 +34,5 @@ example : $(SOURCES) $(HEADERS) example.cpp
 	$(CC) $(SOURCES) example.cpp $(FLAGS) $(LIBS) -o example
 
 clean :
+	rm -f $(FILE_DB) $(FILE_JSON)
 	rm -f example
