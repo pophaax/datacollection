@@ -7,7 +7,6 @@
 #include <vector>
 #include "sqlite3.h"
 
-//using namespace std;
 
 class DBHandler {
 
