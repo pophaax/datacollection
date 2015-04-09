@@ -7,7 +7,7 @@
 #include <vector>
 #include "sqlite3.h"
 
-using namespace std;
+//using namespace std;
 
 class DBHandler {
 
@@ -19,28 +19,28 @@ private:
 	int m_latestDataLogId;
 
 	//execute INSERT query and add new row into table
-	void queryTable(string sqlINSERT);
+	void queryTable(std::string sqlINSERT);
 
 	//retrive data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
-	char** retriveFromTable(string sqlSELECT, int &rows, int &columns);
+	char** retriveFromTable(std::string sqlSELECT, int &rows, int &columns);
 
 	//gets the id column from a given table
-	vector<string> getTableIds(string table);
+	std::vector<std::string> getTableIds(std::string table);
 
 	//gets information(for instance: name/datatype) about all columns
-	vector<string> getColumnInfo(string info, string table);
+	std::vector<std::string> getColumnInfo(std::string info, std::string table);
 
 public:
 
 	DBHandler(void);
 	~DBHandler(void);
 
-	void openDatabase(string fileName);
+	void openDatabase(std::string fileName);
 	void closeDatabase();
 
 	void insertDataLog(
-		string gps_time,
+		std::string gps_time,
 		double gps_lat,
 		double gps_lon,
 		double gps_spd,
@@ -59,27 +59,27 @@ public:
 		float ws_tmp,
 		int wpt_cur);
 
-	void insertMessageLog(string gps_time, string type, string msg);
+	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 
-	bool revChanged(string toCheck, string serverRevs);
+	bool revChanged(std::string toCheck, std::string serverRevs);
 
-	void updateTable(string table, string data);
+	void updateTable(std::string table, std::string data);
 
-	void clearTable(string table);
+	void clearTable(std::string table);
 
     //retrieve one value from a table as string
-	string retriveCell(string table, string id, string column);
+	std::string retriveCell(std::string table, std::string id, std::string column);
 
     //retrieve one value from a table as integer
-	int retriveCellAsInt(string table, string id, string column);
+	int retriveCellAsInt(std::string table, std::string id, std::string column);
 
-	string getLogs();
+	std::string getLogs();
 
-	void removeLogs(string lines);
+	void removeLogs(std::string lines);
 
-	string getMinIdFromTable(string table);
+	std::string getMinIdFromTable(std::string table);
 
-	void deleteRow(string table, string id);
+	void deleteRow(std::string table, std::string id);
 };
 
 #endif

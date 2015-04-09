@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 
-using namespace std;
 
 /******************************************
  *
@@ -17,7 +16,7 @@ class IEncoder {
 	
 	public:
 		virtual ~IEncoder() {}
-		virtual string toString() = 0;
+		virtual std::string toString() = 0;
 };
 
 /******************************************
@@ -32,13 +31,13 @@ class JSONBlock : public IEncoder {
 		JSONBlock();
 		~JSONBlock();
 
-		void setName(string name);
-		void add(string component);
-		string toString();
+		void setName(std::string name);
+		void add(std::string component);
+		std::string toString();
 
 	private:
-		string m_name;
-		vector<string> m_block;
+		std::string m_name;
+		std::vector<std::string> m_block;
 };
 
 /******************************************
@@ -53,13 +52,13 @@ class JSONArray : public IEncoder {
 		JSONArray();
 		~JSONArray();
 
-		void setName(string name);
-		void add(string block);
-		string toString();
+		void setName(std::string name);
+		void add(std::string block);
+		std::string toString();
 
 	private:
-		string m_name;
-		vector<string> m_array;
+		std::string m_name;
+		std::vector<std::string> m_array;
 };
 
 /******************************************
@@ -74,14 +73,14 @@ class JSONData : public IEncoder {
 		JSONData();
 		~JSONData();
 
-		void add(string name, string value);
-		void add(string name, int value);
-		void add(string name, float value);
-		void add(string name, double value);
-		string toString();
+		void add(std::string name, std::string value);
+		void add(std::string name, int value);
+		void add(std::string name, float value);
+		void add(std::string name, double value);
+		std::string toString();
 
 	private:
-		vector<string> m_data;
+		std::vector<std::string> m_data;
 };
 
 /******************************************
@@ -93,16 +92,16 @@ class JSONData : public IEncoder {
 class JSONDecode {
 
 private:
-	vector< map<string, string> > data;
+	std::vector< std::map<std::string, std::string> > data;
 	unsigned int current;
 
 public:
 	JSONDecode();
 	~JSONDecode();
 
-	void addJSON(string json);
+	void addJSON(std::string json);
 	bool hasNext();
-	string getData(string id);
+	std::string getData(std::string id);
 	int getSize();
 	bool isEmpty();
 };

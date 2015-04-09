@@ -28,20 +28,20 @@ JSONBlock::JSONBlock() {
 
 JSONBlock::~JSONBlock() {}
 
-void JSONBlock::setName(string name) {
+void JSONBlock::setName(std::string name) {
 	m_name = name;
 }
 
-void JSONBlock::add(string component) {
+void JSONBlock::add(std::string component) {
 	m_block.push_back(component);
 }
 
-string JSONBlock::toString() {
+std::string JSONBlock::toString() {
 	if(m_block.empty()) {
 		return "";
 	}
 
-	stringstream sstm;
+	std::stringstream sstm;
 	sstm << "{";
 	if(m_name.length() != 0) {
 		sstm << "\"" << m_name << "\":";	
@@ -70,21 +70,21 @@ JSONArray::JSONArray() {
 
 JSONArray::~JSONArray() {}
 
-void JSONArray::setName(string name) {
+void JSONArray::setName(std::string name) {
 	m_name = name;
 }
 
-void JSONArray::add(string block) {
+void JSONArray::add(std::string block) {
 	m_array.push_back(block);
 
 }
 
-string JSONArray::toString() {
+std::string JSONArray::toString() {
 	if(m_array.empty()) {
 		return "";
 	}
 
-	stringstream sstm;
+	std::stringstream sstm;
 	if(m_name.length() != 0) {
 		sstm << "\"" << m_name << "\":";	
 	}
@@ -109,38 +109,38 @@ string JSONArray::toString() {
 JSONData::JSONData() {}
 JSONData::~JSONData() {}
 
-void JSONData::add(string name, string value) {;
-	stringstream sstm;
+void JSONData::add(std::string name, std::string value) {;
+	std::stringstream sstm;
 	sstm << "\"" << name << "\":" << "\"" << value << "\"";
-	string result = sstm.str();
+	std::string result = sstm.str();
 	while(replace(result, " ", "%26"));
 	m_data.push_back(result);
 }
 
-void JSONData::add(string name, int value) {
-	stringstream sstm;
+void JSONData::add(std::string name, int value) {
+	std::stringstream sstm;
 	sstm << "\"" << name << "\":" << value;
 	m_data.push_back(sstm.str());
 }
 
-void JSONData::add(string name, float value) {
-	stringstream sstm;
+void JSONData::add(std::string name, float value) {
+	std::stringstream sstm;
 	sstm << "\"" << name << "\":" << value;
 	m_data.push_back(sstm.str());
 }
 
-void JSONData::add(string name, double value) {
-	stringstream sstm;
+void JSONData::add(std::string name, double value) {
+	std::stringstream sstm;
 	sstm << "\"" << name << "\":" << value;
 	m_data.push_back(sstm.str());
 }
 
-string JSONData::toString() {
+std::string JSONData::toString() {
 	if(m_data.empty()) {
 		return "";
 	}
 
-	stringstream sstm;
+	std::stringstream sstm;
 	for(unsigned int i = 0; i < m_data.size(); i++) {
 		if(i>0){
 			sstm << ",";
@@ -162,28 +162,28 @@ JSONDecode::JSONDecode() {
 }
 JSONDecode::~JSONDecode() {}
 
-void JSONDecode::addJSON(string json) {
+void JSONDecode::addJSON(std::string json) {
 	replace(json,"[{","");
 	replace(json,"}]","");
 	while(replace(json,"\\/","/"));
 	while(replace(json,"\"",""));
 	while(replace(json,"},{","&"));
 
-	string atok;
-	string etok;
-	string id;
-	string value;
-	stringstream astrm(json);
+	std::string atok;
+	std::string etok;
+	std::string id;
+	std::string value;
+	std::stringstream astrm(json);
 
 	while(getline(astrm, atok, '&') ) {
-		stringstream estrm(atok);
-		map<string, string> tmp;
+		std::stringstream estrm(atok);
+		std::map<std::string, std::string> tmp;
 		while(getline(estrm, etok, ',') ) {
-			stringstream dstrm(etok);
+			std::stringstream dstrm(etok);
 			getline(dstrm, id, ':');
 			getline(dstrm, value, ':');
 
-			tmp.insert(pair<string,string>(id,value));
+			tmp.insert(std::pair<std::string,std::string>(id,value));
 		}
 		data.push_back(tmp);
 	}
@@ -198,7 +198,7 @@ bool JSONDecode::hasNext() {
 	return result;
 }
 
-string JSONDecode::getData(string id) {
+std::string JSONDecode::getData(std::string id) {
 	if(data.empty()) {
 		return "";
 	}

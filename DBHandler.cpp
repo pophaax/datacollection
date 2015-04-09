@@ -14,11 +14,11 @@ DBHandler::~DBHandler(void) {
 }
 
 
-void DBHandler::openDatabase(string fileName) {
+void DBHandler::openDatabase(std::string fileName) {
 	m_rc = sqlite3_open(fileName.c_str(), &m_db);
 
 	if (m_rc) {
-		stringstream errorStream;
+		std::stringstream errorStream;
 		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
@@ -33,7 +33,7 @@ void DBHandler::closeDatabase(void) {
 
 
 void DBHandler::insertDataLog(
-	string gps_time,
+	std::string gps_time,
 	double gps_lat,
 	double gps_lon,
 	double gps_spd,
@@ -52,7 +52,7 @@ void DBHandler::insertDataLog(
 	float ws_tmp,
 	int wpt_cur) {
 
-	stringstream sstm;
+	std::stringstream sstm;
 
 	sstm << "INSERT INTO datalogs VALUES(NULL"
 		<< ", '" << gps_time
@@ -68,9 +68,9 @@ void DBHandler::insertDataLog(
 }
 
 
-void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
-	string result;
-	stringstream sstm;
+void DBHandler::insertMessageLog(std::string gps_time, std::string type, std::string msg) {
+	std::string result;
+	std::stringstream sstm;
 	sstm << "INSERT INTO messages VALUES(NULL"
 		<< ", '" << gps_time << "', '" << type << "', '" << msg << "', " << (m_latestDataLogId)
 		<< ");";
@@ -79,10 +79,10 @@ void DBHandler::insertMessageLog(string gps_time, string type, string msg) {
 
 
 
-bool DBHandler::revChanged(string toCheck, string serverRevs) {
+bool DBHandler::revChanged(std::string toCheck, std::string serverRevs) {
 	JSONDecode decoder;
 	decoder.addJSON(serverRevs);
-	string serverConfig, localConfig;
+	std::string serverConfig, localConfig;
 	if (decoder.hasNext()) {
 		serverConfig = decoder.getData(toCheck);
 	} else {
@@ -101,11 +101,11 @@ bool DBHandler::revChanged(string toCheck, string serverRevs) {
 }
 
 
-void DBHandler::updateTable(string table, string data) {
+void DBHandler::updateTable(std::string table, std::string data) {
 	JSONDecode decoder;
 	decoder.addJSON(data);
-	vector<string> types = getColumnInfo("type", table);
-	vector<string> columns = getColumnInfo("name", table);
+	std::vector<std::string> types = getColumnInfo("type", table);
+	std::vector<std::string> columns = getColumnInfo("name", table);
 
 	clearTable(table);
 	while(decoder.hasNext()) {
@@ -130,21 +130,21 @@ void DBHandler::updateTable(string table, string data) {
 }
 
 
-string DBHandler::retriveCell(string table, string id, string column) {
-	string query = "SELECT " + column + " FROM " + table +" WHERE id=" + id + ";";
+std::string DBHandler::retriveCell(std::string table, std::string id, std::string column) {
+	std::string query = "SELECT " + column + " FROM " + table +" WHERE id=" + id + ";";
 
 	int rows, columns;
     char** results;
     results = retriveFromTable(query, rows, columns);
 
     if (columns < 1) {
-		stringstream errorStream;
+		std::stringstream errorStream;
 		errorStream << "DBHandler::retriveCell(), no columns from Query: " << query;
     	throw errorStream.str().c_str();
     }
 
     if (rows < 1) {
-		stringstream errorStream;
+		std::stringstream errorStream;
 		errorStream << "DBHandler::retriveCell(), no rows from Query: " << query;
     	throw errorStream.str().c_str();
     }
@@ -153,23 +153,23 @@ string DBHandler::retriveCell(string table, string id, string column) {
 }
 
 
-int DBHandler::retriveCellAsInt(string table, string id, string column) {
+int DBHandler::retriveCellAsInt(std::string table, std::string id, std::string column) {
 	return atoi(retriveCell(table, id, column).c_str());
 }
 
 
-void DBHandler::clearTable(string table) {
+void DBHandler::clearTable(std::string table) {
 	queryTable("DELETE FROM " + table + ";");
 }
 
 
-string DBHandler::getLogs() {
+std::string DBHandler::getLogs() {
 
-	vector<string> logIds;
+	std::vector<std::string> logIds;
 	logIds = getTableIds("datalogs");
 	JSONArray datalogs;
 	datalogs.setName("datalogs");
-	vector<string> datalogColumns = getColumnInfo("name", "datalogs");
+	std::vector<std::string> datalogColumns = getColumnInfo("name", "datalogs");
 
 /*	for (unsigned int i = 0; i < logIds.size(); i++) {
 		JSONData data;
@@ -204,7 +204,7 @@ string DBHandler::getLogs() {
 		messages.add(block.toString());
 	}
 */
-	stringstream lastId;
+	std::stringstream lastId;
 	lastId << m_latestDataLogId;
 	JSONData data;
 	for (unsigned int j = 0; j < datalogColumns.size(); j++) {
@@ -225,7 +225,7 @@ string DBHandler::getLogs() {
 }
 
 
-void DBHandler::removeLogs(string lines) {
+void DBHandler::removeLogs(std::string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
@@ -235,7 +235,7 @@ std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("i
 }
 
 
-string DBHandler::getMinIdFromTable(string table) {
+std::string DBHandler::getMinIdFromTable(std::string table) {
 	int rows, columns;
     char** results;
     results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
@@ -249,7 +249,7 @@ string DBHandler::getMinIdFromTable(string table) {
 }
 
 
-void DBHandler::deleteRow(string table, string id) {
+void DBHandler::deleteRow(std::string table, std::string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
 }
 
@@ -263,11 +263,11 @@ void DBHandler::deleteRow(string table, string id) {
 
 
 
-void DBHandler::queryTable(string sqlINSERT) {
+void DBHandler::queryTable(std::string sqlINSERT) {
 	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 	if (m_error != NULL) {
-		stringstream errorStream;
+		std::stringstream errorStream;
 		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
@@ -276,7 +276,7 @@ void DBHandler::queryTable(string sqlINSERT) {
 }
 
 
-char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
+char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows,
 		int &columns) {
 	char **results = NULL;
 
@@ -284,7 +284,7 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 			&m_error);
 
 	if (m_error != NULL) {
-		stringstream errorStream;
+		std::stringstream errorStream;
 		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
 		sqlite3_free(m_error);
 
@@ -295,12 +295,12 @@ char** DBHandler::retriveFromTable(string sqlSELECT, int &rows,
 }
 
 
-vector<string> DBHandler::getTableIds(string table) {
+std::vector<std::string> DBHandler::getTableIds(std::string table) {
 	int rows, columns;
     char** results;
     results = retriveFromTable("SELECT id FROM " + table + ";", rows, columns);
 
-    vector<string> ids;
+    std::vector<std::string> ids;
     for (int i = 1; i <= rows; i++) {
     	ids.push_back(results[i]);
     }
@@ -310,11 +310,11 @@ vector<string> DBHandler::getTableIds(string table) {
 
 
 
-vector<string> DBHandler::getColumnInfo(string info, string table) {
+std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
 	int rows, columns;
     char** results;
     results = retriveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
-    vector<string> types;
+    std::vector<std::string> types;
     int infoIndex = 0;
     for (int i = 0; i < columns; i++) {
     	if (std::string(info).compare(results[i]) == 0) {
