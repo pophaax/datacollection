@@ -50,7 +50,11 @@ void DBHandler::insertDataLog(
 	int ws_dir,
 	float ws_spd,
 	float ws_tmp,
-	int wpt_cur) {
+	int wpt_cur,
+
+	int cps_head,
+	int cps_pitch,
+	int cps_roll) {
 
 	std::stringstream sstm;
 
@@ -61,6 +65,7 @@ void DBHandler::insertDataLog(
 		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
 		<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp
 		<< ", "  << wpt_cur
+		<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll
 		<< ");";
 
 	queryTable(sstm.str());

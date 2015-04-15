@@ -56,7 +56,10 @@ public:
 		int ws_dir,
 		float ws_spd,
 		float ws_tmp,
-		int wpt_cur);
+		int wpt_cur,
+		int cps_head,
+		int cps_pitch,
+		int cps_roll);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 
