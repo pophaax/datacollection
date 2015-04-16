@@ -67,7 +67,8 @@ void DBHandler::insertDataLog(
 		<< ", "  << wpt_cur
 		<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll
 		<< ");";
-
+	std::basic_string<char> tmp = sstm.str();
+	printf("SQL-%s\n",tmp.c_str());
 	queryTable(sstm.str());
 	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
 }
