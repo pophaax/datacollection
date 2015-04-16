@@ -246,7 +246,7 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     char** results;
     std::cout << "id from table" << std::endl;
     results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
-    std::cout << "got result |" << rows << ":" << columns << "|" << results << std::endl;
+    std::cout << "got result |" << rows << ":" << columns << "|" << results[1] << std::endl;
     if (rows * columns < 1) {
     	return "";
     }
