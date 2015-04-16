@@ -244,8 +244,9 @@ std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("i
 std::string DBHandler::getMinIdFromTable(std::string table) {
 	int rows, columns;
     char** results;
+    std::cout << "id from table" << std::endl;
     results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
-
+    std::cout << "got result - " << rows << "-" << columns << " " << std::endl;
     if (rows * columns < 1) {
     	return "";
     }
