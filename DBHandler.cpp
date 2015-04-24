@@ -244,15 +244,17 @@ std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("i
 std::string DBHandler::getMinIdFromTable(std::string table) {
 	int rows, columns;
     char** results;
-    std::cout << "id from table" << std::endl;
     results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
-    std::cout << "got result |" << rows << ":" << columns << "|" << results[1] << std::endl;
+    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
     if (rows * columns < 1) {
     	return "";
     }
 
-    return results[1];
-
+    if(results[1] == '\0') {
+    	return "noll";
+    } else {
+    	return results[1];
+    }
 }
 
 
@@ -283,8 +285,7 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 }
 
 
-char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows,
-		int &columns) {
+char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &columns) {
 	char **results = NULL;
 
 	sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,

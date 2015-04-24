@@ -5,7 +5,6 @@ int main() {
 	db.openDatabase("asr.db");
 
 	try {
-
 		std::cout << "as string: " << db.retriveCell("configs", "1", "sc_ang_run") << "\n";
 		std::cout << "as int: " << db.retriveCellAsInt("configs", "1", "sc_ang_run") << "\n";
 
