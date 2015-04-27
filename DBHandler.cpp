@@ -51,7 +51,6 @@ void DBHandler::insertDataLog(
 	float ws_spd,
 	float ws_tmp,
 	int wpt_cur,
-
 	int cps_head,
 	int cps_pitch,
 	int cps_roll) {
@@ -63,8 +62,7 @@ void DBHandler::insertDataLog(
 		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
 		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
-		<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp
-		<< ", "  << wpt_cur
+		<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp << ", " << wpt_cur
 		<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll
 		<< ");";
 
@@ -72,11 +70,9 @@ void DBHandler::insertDataLog(
 	outp << "'" << gps_time << "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 	<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
 	<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
-	<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp
-	<< ", "  << wpt_cur
+	<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp << ", "  << wpt_cur
 	<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll;
-	std::basic_string<char> tmp = outp.str();
-	printf("%s\n",tmp.c_str());
+	printf("%s\n",outp.str().c_str());
 
 	queryTable(sstm.str());
 	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
