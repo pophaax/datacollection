@@ -58,9 +58,8 @@ void DBHandler::insertDataLog(
 
 	std::stringstream sstm;
 
-	//sstm << "INSERT INTO datalogs VALUES(NULL"
-	//	<< ", '" << gps_time
-	sstm << "'"<< gps_time
+	sstm << "INSERT INTO datalogs VALUES(NULL"
+		<< ", '" << gps_time
 		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
 		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
@@ -68,8 +67,17 @@ void DBHandler::insertDataLog(
 		<< ", "  << wpt_cur
 		<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll
 		<< ");";
-	std::basic_string<char> tmp = sstm.str();
+
+	std::stringstream outp;
+	outp << "'" << gps_time << "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
+	<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
+	<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
+	<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp
+	<< ", "  << wpt_cur
+	<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll;
+	std::basic_string<char> tmp = outp.str();
 	printf("%s\n",tmp.c_str());
+
 	queryTable(sstm.str());
 	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
 }
