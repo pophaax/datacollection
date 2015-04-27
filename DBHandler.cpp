@@ -58,8 +58,9 @@ void DBHandler::insertDataLog(
 
 	std::stringstream sstm;
 
-	sstm << "INSERT INTO datalogs VALUES(NULL"
-		<< ", '" << gps_time
+	//sstm << "INSERT INTO datalogs VALUES(NULL"
+	//	<< ", '" << gps_time
+	sstm << "'"<< gps_time
 		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
 		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
 		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
