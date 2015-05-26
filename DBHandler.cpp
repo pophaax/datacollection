@@ -20,7 +20,7 @@ void DBHandler::openDatabase(std::string fileName) {
 	if (m_rc) {
 		std::stringstream errorStream;
 		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
+		//sqlite3_free(m_error);
 
 		throw errorStream.str().c_str();
 	}
