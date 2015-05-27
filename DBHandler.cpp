@@ -165,7 +165,14 @@ std::string DBHandler::retriveCell(std::string table, std::string id, std::strin
 
 
 int DBHandler::retriveCellAsInt(std::string table, std::string id, std::string column) {
-	return atoi(retriveCell(table, id, column).c_str());
+	try {
+		return atoi(retriveCell(table, id, column).c_str());
+	}
+	catch (const char *  e) {
+		std::cout << "exception thrown in retriveCellAsInt, is returned cell a int?  " << e << std::endl;
+		return 0;
+	}
+	
 }
 
 
