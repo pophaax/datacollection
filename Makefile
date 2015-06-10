@@ -30,9 +30,6 @@ $(FILE_JSON) : $(SOURCES_JSON) $(HEADERS_JSON)
 $(FILE_DB) : $(SOURCES_DB) $(HEADERS_DB)
 	$(CC) $(SOURCES_DB) $(FLAGS) $(LIBS) -c -o $(FILE_DB)
 
-example : $(SOURCES) $(HEADERS) example.cpp
-	$(CC) $(SOURCES) example.cpp $(FLAGS) $(LIBS) -o example
 
 clean :
 	rm -f $(FILE_DB) $(FILE_JSON)
-	rm -f example
