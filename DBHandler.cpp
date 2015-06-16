@@ -15,6 +15,16 @@ DBHandler::~DBHandler(void) {
 
 
 void DBHandler::openDatabase(std::string fileName) {
+	
+	// check if file exists
+	FILE* db_file = fopen(fileName.c_str(), "r");
+	if (!db_file) {
+		std::string error = "DBHandler::openDatabase(), " + fileName +
+			" not found.";
+		throw error.c_str();
+	}
+	fclose(db_file);
+
 	m_rc = sqlite3_open(fileName.c_str(), &m_db);
 
 	if (m_rc) {
