@@ -357,3 +357,17 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
 	}
     return types;
 }
+
+void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
+
+	std::string id;
+	std::string lat;
+	std::string lon;
+	int radius;
+
+	waypointModel.id = getMinIdFromTable("waypoints");
+	waypointModel.latitude = atof(retriveCell("waypoints", id, "lat").c_str());
+	waypointModel.longitude = atof(retriveCell("waypoints", id, "lon").c_str());
+	waypointModel.radius = retriveCellAsInt("waypoints",id, "radius");
+
+}

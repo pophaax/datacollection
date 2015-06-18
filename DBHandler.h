@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "sqlite3.h"
+#include "../models/WaypointModel.h"
 
 
 class DBHandler {
@@ -82,6 +83,8 @@ public:
 	std::string getMinIdFromTable(std::string table);
 
 	void deleteRow(std::string table, std::string id);
+
+	void getWaypointFromTable(WaypointModel &waypointModel);
 };
 
 #endif
