@@ -3,14 +3,18 @@
 #include <iomanip>
 #include <string>
 #include <cstdlib>
+#include <cstdio>
 
 
-DBHandler::DBHandler(void) {
+DBHandler::DBHandler(void) :
+	m_db(NULL)
+{
 	m_latestDataLogId = 1;
 }
 
 
 DBHandler::~DBHandler(void) {
+	closeDatabase();
 }
 
 
@@ -30,7 +34,6 @@ void DBHandler::openDatabase(std::string fileName) {
 	if (m_rc) {
 		std::stringstream errorStream;
 		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-		//sqlite3_free(m_error);
 
 		throw errorStream.str().c_str();
 	}
@@ -39,6 +42,7 @@ void DBHandler::openDatabase(std::string fileName) {
 
 void DBHandler::closeDatabase(void) {
 	sqlite3_close(m_db);
+	m_db = NULL;
 }
 
 
@@ -295,14 +299,20 @@ void DBHandler::deleteRow(std::string table, std::string id) {
 
 
 void DBHandler::queryTable(std::string sqlINSERT) {
-	m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+	if (m_db != NULL) {
 
-	if (m_error != NULL) {
-		std::stringstream errorStream;
-		errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
+		m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
-		throw errorStream.str().c_str();
+		if (m_error != NULL) {
+			std::stringstream errorStream;
+			errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
+			sqlite3_free(m_error);
+
+			throw errorStream.str().c_str();
+		}
+	}
+	else {
+		throw "DBHandler::queryTable(), no db connection";
 	}
 }
 
@@ -310,15 +320,21 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &columns) {
 	char **results = NULL;
 
-	sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
-			&m_error);
+	if (m_db != NULL) {
 
-	if (m_error != NULL) {
-		std::stringstream errorStream;
-		errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
-		sqlite3_free(m_error);
+		sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
+				&m_error);
 
-		throw errorStream.str().c_str();
+		if (m_error != NULL) {
+			std::stringstream errorStream;
+			errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(m_db);
+			sqlite3_free(m_error);
+
+			throw errorStream.str().c_str();
+		}
+	}
+	else {
+		throw "DBHandler::retrieveFromTable(), no db connection";
 	}
 
 	return results;
