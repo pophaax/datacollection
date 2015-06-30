@@ -377,8 +377,8 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
 void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	waypointModel.id = getMinIdFromTable("waypoints");
-	waypointModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
-	waypointModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
+	waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
+	waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
 	waypointModel.radius = retriveCellAsInt("waypoints",waypointModel.id, "radius");
 
 }
