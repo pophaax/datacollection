@@ -60,7 +60,8 @@ void DBHandler::insertDataLog(
 	double cc_dtw,
 	double cc_btw,
 	double cc_cts,
-	int cc_tack,
+	bool cc_tack,
+	bool cc_goingStarboard,
 	int ws_dir,
 	float ws_spd,
 	float ws_tmp,
@@ -69,24 +70,34 @@ void DBHandler::insertDataLog(
 	int cps_pitch,
 	int cps_roll) {
 
+	std::stringstream values;
+	values << std::setprecision(10)
+		<< "'" << gps_time << "', "
+		<< gps_lat << ", "
+		<< gps_lon << ", "
+		<< gps_spd << ", "
+		<< gps_head << ", "
+		<< gps_sat << ", "
+		<< sc_cmd << ", "
+		<< rc_cmd << ", "
+		<< ss_pos << ", "
+		<< rs_pos << ", "
+		<< cc_dtw << ", "
+		<< cc_btw << ", "
+		<< cc_cts << ", "
+		<< cc_tack << ", "
+		<< cc_goingStarboard << ", "
+		<< ws_dir << ", "
+		<< ws_spd << ", "
+		<< ws_tmp << ", "
+		<< wpt_cur << ", "
+		<< cps_head << ", "
+		<< cps_pitch << ", "
+		<< cps_roll;
+	printf("%s\n",values.str().c_str());
+
 	std::stringstream sstm;
-
-	sstm << "INSERT INTO datalogs VALUES(NULL"
-		<< ", '" << gps_time
-		<< "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
-		<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
-		<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
-		<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp << ", " << wpt_cur
-		<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll
-		<< ");";
-
-	std::stringstream outp;
-	outp << "'" << gps_time << "', " << std::setprecision(10) << gps_lat << ", " << gps_lon << ", " << gps_spd << ", " << gps_head << ", " << gps_sat
-	<< ", " << sc_cmd << ", " << rc_cmd << ", " << ss_pos << ", " << rs_pos
-	<< ", " << cc_dtw << ", " << cc_btw << ", " << cc_cts << ", " << cc_tack
-	<< ", " << ws_dir << ", " << ws_spd << ", " << ws_tmp << ", "  << wpt_cur
-	<< ", " << cps_head << ", " << cps_pitch << ", " << cps_roll;
-	printf("%s\n",outp.str().c_str());
+	sstm << "INSERT INTO datalogs VALUES(NULL, " << values.str() << ");";
 
 	queryTable(sstm.str());
 	m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
