@@ -277,7 +277,6 @@ std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("i
 	}
 }
 
-
 std::string DBHandler::getMinIdFromTable(std::string table) {
 	int rows, columns;
     char** results;
@@ -294,20 +293,20 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     }
 }
 
-
 void DBHandler::deleteRow(std::string table, std::string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
 }
 
-
-
+void DBHandler::insert(std::string table, std::string fields, std::string values)
+{
+	queryTable("INSERT INTO " + table + "(" + fields +
+		") VALUES(" + values + ");");
+}
 
 
 ////////////////////////////////////////////////////////////////////
 // private helpers
 ////////////////////////////////////////////////////////////////////
-
-
 
 void DBHandler::queryTable(std::string sqlINSERT) {
 	if (m_db != NULL) {
@@ -326,7 +325,6 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 		throw "DBHandler::queryTable(), no db connection";
 	}
 }
-
 
 char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &columns) {
 	char **results = NULL;
@@ -351,7 +349,6 @@ char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &column
 	return results;
 }
 
-
 std::vector<std::string> DBHandler::getTableIds(std::string table) {
 	int rows, columns;
     char** results;
@@ -364,8 +361,6 @@ std::vector<std::string> DBHandler::getTableIds(std::string table) {
 
     return ids;
 }
-
-
 
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
 	int rows, columns;

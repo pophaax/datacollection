@@ -86,6 +86,8 @@ public:
 	void deleteRow(std::string table, std::string id);
 
 	void getWaypointFromTable(WaypointModel &waypointModel);
+
+	void insert(std::string table, std::string fields, std::string values);
 };
 
 #endif
