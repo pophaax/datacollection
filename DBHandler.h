@@ -7,6 +7,7 @@
 #include <vector>
 #include "sqlite3.h"
 #include "../models/WaypointModel.h"
+#include "logger/Logger.h"
 
 
 class DBHandler {
@@ -17,6 +18,7 @@ private:
 	sqlite3 *m_db;
 	char *m_error;
 	int m_latestDataLogId;
+	Logger m_logger;
 
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
@@ -77,6 +79,7 @@ public:
     //retrieve one value from a table as integer
 	int retriveCellAsInt(std::string table, std::string id, std::string column);
 
+	// returns first row in datalogs as JSON
 	std::string getLogs();
 
 	void removeLogs(std::string lines);
@@ -89,8 +92,10 @@ public:
 
 	void insert(std::string table, std::string fields, std::string values);
 
-	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
+	// inserts area scanning measurements into db
+	void insertScan(PositionModel position, float temperature);
 
+	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
 };
 
 #endif

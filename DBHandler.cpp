@@ -288,6 +288,38 @@ void DBHandler::insert(std::string table, std::string fields, std::string values
 		") VALUES(" + values + ");");
 }
 
+void DBHandler::insertScan(PositionModel position, float temperature)
+{
+	std::string waypoint_id = getMinIdFromTable("waypoints");
+
+	std::string i = "null", j = "null";
+
+	try {
+		i = retriveCell("waypoint_index", waypoint_id, "i");
+		j = retriveCell("waypoint_index", waypoint_id, "j");
+	} catch (const char * error) {
+		m_logger.error(error);
+	}
+
+	std::ostringstream fields;
+	fields << "waypoint_id,"
+		<< "latitude,"
+		<< "longitude,"
+		<< "air_temperature,"
+		<< "i,"
+		<< "j";
+
+	std::ostringstream values;
+	values << waypoint_id << ","
+		<< position.latitude << ","
+		<< position.longitude << ","
+		<< temperature << ","
+		<< i << ","
+		<< j;
+
+	insert("scanning_measurements", fields.str(), values.str());
+}
+
 
 ////////////////////////////////////////////////////////////////////
 // private helpers
