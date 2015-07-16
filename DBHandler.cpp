@@ -272,26 +272,11 @@ void DBHandler::removeLogs(std::string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
-std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id") << "\n";
+		std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id") << "\n";
 		queryTable("DELETE FROM " + decoder.getData("tab") + " WHERE id = " + decoder.getData("id") + ";");
 	}
 }
 
-std::string DBHandler::getMinIdFromTable(std::string table) {
-	int rows, columns;
-    char** results;
-    results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
-    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
-    if (rows * columns < 1) {
-    	return "";
-    }
-
-    if(results[1] == '\0') {
-    	return "noll";
-    } else {
-    	return results[1];
-    }
-}
 
 void DBHandler::deleteRow(std::string table, std::string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
@@ -382,9 +367,31 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
 
 void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
-	waypointModel.id = getMinIdFromTable("waypoints");
-	waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
-	waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
-	waypointModel.radius = retriveCellAsInt("waypoints",waypointModel.id, "radius");
+	int rows, columns;
+    char** results;
+    results = retriveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
+    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
+    if (rows * columns < 1 || results[1] == '\0') {
+    	waypointModel.id = "";
+    }
+    else {
+    	waypointModel.id = results[1];
+    }
+
+	if(!waypointModel.id.empty())
+	{
+		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
+		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
+		waypointModel.radius = retriveCellAsInt("waypoints",waypointModel.id, "radius");
+	}
 
 }
+
+
+void DBHandler::changeOneValue(std::string table, std::string id,std::string newValue, std::string colName){
+
+	queryTable("UPDATE " + table + " SET "+ colName + " = "+ newValue +" WHERE id = " + id +";");
+
+}
+
+

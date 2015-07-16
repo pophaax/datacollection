@@ -88,6 +88,9 @@ public:
 	void getWaypointFromTable(WaypointModel &waypointModel);
 
 	void insert(std::string table, std::string fields, std::string values);
+
+	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
+
 };
 
 #endif
