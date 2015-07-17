@@ -426,4 +426,20 @@ void DBHandler::changeOneValue(std::string table, std::string id,std::string new
 
 }
 
+std::string DBHandler::getMinIdFromTable(std::string table) {
+	int rows, columns;
+    char** results;
+    results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
+    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
+    if (rows * columns < 1) {
+    	return "";
+   }
+
+    if(results[1] == '\0') {
+    	return "noll";
+    } else {
+    	return results[1];
+    }
+}
+
 

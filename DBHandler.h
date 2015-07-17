@@ -96,6 +96,8 @@ public:
 	void insertScan(PositionModel position, float temperature);
 
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
+
+	
 };
 
 #endif
