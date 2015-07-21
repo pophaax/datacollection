@@ -298,8 +298,7 @@ void DBHandler::insertScan(PositionModel position, float temperature)
 		i = retriveCell("waypoint_index", waypoint_id, "i");
 		j = retriveCell("waypoint_index", waypoint_id, "j");
 	} catch (const char * error) {
-		//m_logger.error(error);
-		std::cout <<"fuck off"<<std::endl;
+		m_logger.error(error);
 	}
 
 	std::ostringstream fields;
