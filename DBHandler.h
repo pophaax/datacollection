@@ -97,7 +97,7 @@ public:
 
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
 
-	
+
 };
 
 #endif

@@ -298,7 +298,8 @@ void DBHandler::insertScan(PositionModel position, float temperature)
 		i = retriveCell("waypoint_index", waypoint_id, "i");
 		j = retriveCell("waypoint_index", waypoint_id, "j");
 	} catch (const char * error) {
-		m_logger.error(error);
+		//m_logger.error(error);
+		std::cout <<"fuck off"<<std::endl;
 	}
 
 	std::ostringstream fields;
@@ -433,10 +434,9 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
     if (rows * columns < 1) {
     	return "";
-   }
-
+    }
     if(results[1] == '\0') {
-    	return "noll";
+    	return "";
     } else {
     	return results[1];
     }
