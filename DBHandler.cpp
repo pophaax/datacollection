@@ -84,7 +84,7 @@ void DBHandler::insertDataLog(
 		<< systemState.compassModel.heading << ", "
 		<< systemState.compassModel.pitch << ", "
 		<< systemState.compassModel.roll;
-	printf("%s\n",values.str().c_str());
+	//printf("%s\n",values.str().c_str());
 
 	std::stringstream sstm;
 	sstm << "INSERT INTO datalogs VALUES(NULL, " << values.str() << ");";
