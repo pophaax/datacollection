@@ -6,9 +6,11 @@
 #include <string>
 #include <vector>
 #include "sqlite3.h"
-#include "../models/WaypointModel.h"
 #include "logger/Logger.h"
 
+class SystemStateModel;
+class WaypointModel;
+class PositionModel;
 
 class DBHandler {
 
@@ -42,14 +44,7 @@ public:
 	void closeDatabase();
 
 	void insertDataLog(
-		std::string gps_time,
-		double gps_lat,
-		double gps_lon,
-		double gps_spd,
-		double gps_head,
-		int gps_sat,
-		int sc_cmd,
-		int rc_cmd,
+		SystemStateModel systemState,
 		int ss_pos,
 		int rs_pos,
 		double cc_dtw,
@@ -57,13 +52,7 @@ public:
 		double cc_cts,
 		bool cc_tack,
 		bool cc_goingStarboard,
-		int ws_dir,
-		float ws_spd,
-		float ws_tmp,
-		int wpt_cur,
-		int cps_head,
-		int cps_pitch,
-		int cps_roll);
+		int wpt_cur);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 

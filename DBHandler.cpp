@@ -4,6 +4,9 @@
 #include <string>
 #include <cstdlib>
 #include <cstdio>
+#include "models/SystemStateModel.h"
+#include "models/WaypointModel.h"
+#include "models/PositionModel.h"
 
 
 DBHandler::DBHandler(void) :
@@ -47,14 +50,7 @@ void DBHandler::closeDatabase(void) {
 
 
 void DBHandler::insertDataLog(
-	std::string gps_time,
-	double gps_lat,
-	double gps_lon,
-	double gps_spd,
-	double gps_head,
-	int gps_sat,
-	int sc_cmd,
-	int rc_cmd,
+	SystemStateModel systemState,
 	int ss_pos,
 	int rs_pos,
 	double cc_dtw,
@@ -62,24 +58,18 @@ void DBHandler::insertDataLog(
 	double cc_cts,
 	bool cc_tack,
 	bool cc_goingStarboard,
-	int ws_dir,
-	float ws_spd,
-	float ws_tmp,
-	int wpt_cur,
-	int cps_head,
-	int cps_pitch,
-	int cps_roll) {
+	int wpt_cur) {
 
 	std::stringstream values;
 	values << std::setprecision(10)
-		<< "'" << gps_time << "', "
-		<< gps_lat << ", "
-		<< gps_lon << ", "
-		<< gps_spd << ", "
-		<< gps_head << ", "
-		<< gps_sat << ", "
-		<< sc_cmd << ", "
-		<< rc_cmd << ", "
+		<< "'" << systemState.gpsModel.timestamp << "', "
+		<< systemState.gpsModel.latitude << ", "
+		<< systemState.gpsModel.longitude << ", "
+		<< systemState.gpsModel.speed << ", "
+		<< systemState.gpsModel.heading << ", "
+		<< systemState.gpsModel.satellitesUsed << ", "
+		<< systemState.sail << ", "
+		<< systemState.rudder << ", "
 		<< ss_pos << ", "
 		<< rs_pos << ", "
 		<< cc_dtw << ", "
@@ -87,13 +77,13 @@ void DBHandler::insertDataLog(
 		<< cc_cts << ", "
 		<< cc_tack << ", "
 		<< cc_goingStarboard << ", "
-		<< ws_dir << ", "
-		<< ws_spd << ", "
-		<< ws_tmp << ", "
+		<< systemState.windsensorModel.direction << ", "
+		<< systemState.windsensorModel.speed << ", "
+		<< systemState.windsensorModel.temperature << ", "
 		<< wpt_cur << ", "
-		<< cps_head << ", "
-		<< cps_pitch << ", "
-		<< cps_roll;
+		<< systemState.compassModel.heading << ", "
+		<< systemState.compassModel.pitch << ", "
+		<< systemState.compassModel.roll;
 	printf("%s\n",values.str().c_str());
 
 	std::stringstream sstm;
@@ -415,6 +405,7 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
 		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
 		waypointModel.radius = retriveCellAsInt("waypoints",waypointModel.id, "radius");
+		waypointModel.time = retriveCellAsInt("waypoint_stationary", waypointModel.id, "time");
 	}
 
 }
