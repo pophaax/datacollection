@@ -7,6 +7,9 @@
 #
 #######################################################
 
+# for gcov:
+#CC1 = g++ -c -g -O0 --coverage 
+
 CC = g++
 FLAGS = -pedantic -Werror -std=c++14
 LIBS = -lsqlite3 -I$(SAILINGROBOTS_HOME)
@@ -27,7 +30,8 @@ all: $(FILE_JSON) $(FILE_DB)
 $(FILE_JSON): $(SOURCES_JSON) $(HEADERS_JSON)
 	$(CC) $(SOURCES_JSON) $(FLAGS) $(LIBS) -c -o $(FILE_JSON)
 
-$(FILE_DB): $(SOURCES_DB) $(HEADERS_DB)
+# insert CC1 instead of CC when using gcov:
+$(FILE_DB): $(SOURCES_DB) $(HEADERS_DB) 
 	$(CC) $(SOURCES_DB) $(FLAGS) $(LIBS) -c -o $(FILE_DB)
 
 
