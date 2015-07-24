@@ -58,7 +58,8 @@ void DBHandler::insertDataLog(
 	double cc_cts,
 	bool cc_tack,
 	bool cc_goingStarboard,
-	int wpt_cur) {
+	int wpt_cur,
+	float twd) {
 
 	std::stringstream values;
 	values << std::setprecision(10)
@@ -83,7 +84,8 @@ void DBHandler::insertDataLog(
 		<< wpt_cur << ", "
 		<< systemState.compassModel.heading << ", "
 		<< systemState.compassModel.pitch << ", "
-		<< systemState.compassModel.roll;
+		<< systemState.compassModel.roll << ", "
+		<< twd;
 	//printf("%s\n",values.str().c_str());
 
 	std::stringstream sstm;

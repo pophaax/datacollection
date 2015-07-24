@@ -52,7 +52,8 @@ public:
 		double cc_cts,
 		bool cc_tack,
 		bool cc_goingStarboard,
-		int wpt_cur);
+		int wpt_cur,
+		float twd);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 
