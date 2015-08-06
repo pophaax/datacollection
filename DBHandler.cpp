@@ -64,8 +64,8 @@ void DBHandler::insertDataLog(
 	std::stringstream values;
 	values << std::setprecision(10)
 		<< "'" << systemState.gpsModel.timestamp << "', "
-		<< systemState.gpsModel.latitude << ", "
-		<< systemState.gpsModel.longitude << ", "
+		<< systemState.gpsModel.positionModel.latitude << ", "
+		<< systemState.gpsModel.positionModel.longitude << ", "
 		<< systemState.gpsModel.speed << ", "
 		<< systemState.gpsModel.heading << ", "
 		<< systemState.gpsModel.satellitesUsed << ", "
