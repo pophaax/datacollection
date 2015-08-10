@@ -280,9 +280,9 @@ void DBHandler::insert(std::string table, std::string fields, std::string values
 		") VALUES(" + values + ");");
 }
 
-void DBHandler::insertScan(PositionModel position, float temperature)
+void DBHandler::insertScan(std::string waypoint_id, PositionModel position, float temperature)
 {
-	std::string waypoint_id = getMinIdFromTable("waypoints");
+	//std::string waypoint_id = getMinIdFromTable("waypoints");
 
 	std::string i = "null", j = "null";
 
