@@ -86,7 +86,7 @@ void DBHandler::insertDataLog(
 		<< systemState.compassModel.pitch << ", "
 		<< systemState.compassModel.roll << ", "
 		<< twd;
-	//printf("%s\n",values.str().c_str());
+	printf("GPS GMT + 3: %s GPS UTC: %s\n",systemState.gpsModel.timestamp.c_str(),systemState.time_UTC.c_str());
 
 	std::stringstream sstm;
 	sstm << "INSERT INTO datalogs VALUES(NULL, " << values.str() << ");";
