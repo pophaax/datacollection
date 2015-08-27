@@ -280,7 +280,7 @@ void DBHandler::insert(std::string table, std::string fields, std::string values
 		") VALUES(" + values + ");");
 }
 
-void DBHandler::insertScan(std::string waypoint_id, PositionModel position, float temperature)
+void DBHandler::insertScan(std::string waypoint_id, PositionModel position, float temperature, std::string timestamp)
 {
 	//std::string waypoint_id = getMinIdFromTable("waypoints");
 
@@ -295,6 +295,7 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 
 	std::ostringstream fields;
 	fields << "waypoint_id,"
+		<< "time_UTC,"
 		<< "latitude,"
 		<< "longitude,"
 		<< "air_temperature,"
@@ -303,6 +304,7 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 
 	std::ostringstream values;
 	values << waypoint_id << ","
+		<< timestamp << ","
 		<< position.latitude << ","
 		<< position.longitude << ","
 		<< temperature << ","
@@ -340,8 +342,7 @@ char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &column
 
 	if (m_db != NULL) {
 
-		sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns,
-				&m_error);
+		sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;

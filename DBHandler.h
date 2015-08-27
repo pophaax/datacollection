@@ -83,7 +83,7 @@ public:
 	void insert(std::string table, std::string fields, std::string values);
 
 	// inserts area scanning measurements into db
-	void insertScan(std::string waypoint_id, PositionModel position, float temperature);
+	void insertScan(std::string waypoint_id, PositionModel position, float temperature, std::string timestamp);
 
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
 
