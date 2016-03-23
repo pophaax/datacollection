@@ -407,7 +407,8 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 	{
 		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
 		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
-		waypointModel.radius = retriveCellAsInt("waypoints",waypointModel.id, "radius");
+		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
+		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
 		
 		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " + 
 			waypointModel.id + ";", rows, columns);
