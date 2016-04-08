@@ -11,7 +11,7 @@
 #CC1 = g++ -c -g -O0 --coverage 
 
 CC = g++
-FLAGS = -pedantic -Werror -std=c++14
+FLAGS = -g -pedantic -Werror -std=c++14
 LIBS = -lsqlite3 -I$(SAILINGROBOTS_HOME)
 
 SOURCES_DB = DBHandler.cpp
