@@ -22,7 +22,7 @@ DBHandler::~DBHandler(void) {
 
 
 void DBHandler::openDatabase(std::string fileName) {
-	
+
 	// check if file exists
 	FILE* db_file = fopen(fileName.c_str(), "r");
 	if (!db_file) {
@@ -187,9 +187,10 @@ int DBHandler::retriveCellAsInt(std::string table, std::string id, std::string c
 	}
 	catch (const char *  e) {
 		std::cout << "exception thrown in retriveCellAsInt, is returned cell a int?  " << e << std::endl;
+		std::cout << "table : " << table << " id : " << id << " column : " << column << std::endl;
 		return 0;
 	}
-	
+
 }
 
 
@@ -409,10 +410,10 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
 		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
 		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
-		
-		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " + 
+
+		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
 			waypointModel.id + ";", rows, columns);
-		
+
 		if (rows * columns < 1 || results[1] == '\0') {
 			waypointModel.time = 0;
 		}
@@ -444,5 +445,3 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     	return results[1];
     }
 }
-
-
