@@ -294,8 +294,12 @@ void DBHandler::openDatabase() {
 	}
 	fclose(db_file);
 
-	m_rc = sqlite3_open(m_filePath.c_str(), &m_db);
-
+	/* 3rd param: Flag that sets threading mode
+	 * 4th param: Name of the vfs object, uses default if it is NULL
+	 */
+	m_rc = sqlite3_open_v2(m_filePath.c_str(), &m_db, SQLITE_OPEN_NOMUTEX, NULL);
+	std::cout << "## Resultcode: " << m_rc << std::endl;
+	
 	if (m_rc) {
 		std::stringstream errorStream;
 		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
