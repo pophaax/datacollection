@@ -21,6 +21,7 @@ private:
 	char *m_error;
 	int m_latestDataLogId;
 	Logger m_logger;
+	std::string m_filePath;
 
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
@@ -44,7 +45,7 @@ private:
 
 public:
 
-	DBHandler(void);
+	DBHandler(std::string filePath);
 	~DBHandler(void);
 
 	void openDatabase(std::string fileName);

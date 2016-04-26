@@ -9,8 +9,9 @@
 #include "models/PositionModel.h"
 
 
-DBHandler::DBHandler(void) :
-	m_db(NULL)
+DBHandler::DBHandler(std::string filePath) :
+	m_db(NULL),
+	m_filePath(filePath)
 {
 	m_latestDataLogId = 1;
 }
