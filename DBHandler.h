@@ -25,6 +25,8 @@ private:
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
 
+	std::string getDataLogRow(std::string select, std::string table, std::string id, std::vector<std::string> &values, std::vector<std::string> &columNames);
+
 	//retrive data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retriveFromTable(std::string sqlSELECT, int &rows, int &columns);
@@ -34,6 +36,11 @@ private:
 
 	//gets information(for instance: name/datatype) about all columns
 	std::vector<std::string> getColumnInfo(std::string info, std::string table);
+
+	//help function used in insertDataLog
+	int insertLog(std::string table, std::string values);
+
+	std::string formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames);
 
 public:
 
@@ -45,15 +52,15 @@ public:
 
 	void insertDataLog(
 		SystemStateModel systemState,
-		int ss_pos,
-		int rs_pos,
-		double cc_dtw,
-		double cc_btw,
-		double cc_cts,
-		bool cc_tack,
-		bool cc_goingStarboard,
-		int wpt_cur,
-		float twd);
+		int sail_servo_position,
+		int rudder_servo_position,
+		double course_calculation_distance_to_waypoint,
+		double course_calculation_bearing_to_waypoint,
+		double course_calculation_course_to_steer,
+		bool course_calculation_tack,
+		bool course_calculation_going_starboard,
+		int waypoint_id,
+		double true_wind_direction_calc);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 
@@ -86,7 +93,6 @@ public:
 	void insertScan(std::string waypoint_id, PositionModel position, float temperature, std::string timestamp);
 
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
-
 
 };
 
