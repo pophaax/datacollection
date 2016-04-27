@@ -14,6 +14,7 @@ DBHandler::DBHandler(std::string filePath) :
 	m_filePath(filePath)
 {
 	m_latestDataLogId = 1;
+	m_latestWaypointId = 1;
 }
 
 
@@ -217,43 +218,13 @@ void DBHandler::clearTable(std::string table) {
 	queryTable("DELETE FROM " + table + ";");
 }
 
-/*	for (unsigned int i = 0; i < logIds.size(); i++) {
-		JSONData data;
-
-		for (unsigned int j = 0; j < datalogColumns.size(); j++) {
-			data.add(datalogColumns[j], retriveCell("datalogs", logIds[i], datalogColumns[j]));
-		}
-
-		vector<string> stateColumns = getColumnInfo("name", "state");
-		for (unsigned int j = 0; j < stateColumns.size(); j++) {
-			data.add(stateColumns[j], retriveCell("state", "1", stateColumns[j]));
-		}
-
-		JSONBlock block;
-		block.add(data.toString());
-		datalogs.add(block.toString());
-	}
-
-	vector<string> msgIds;
-	msgIds = getTableIds("messages");
-	JSONArray messages;
-	messages.setName("messages");
-	vector<string> messageColumns = getColumnInfo("name", "messages");
-
-	for (unsigned int i = 0; i < msgIds.size(); i++) {
-		JSONData data;
-		for (unsigned int j = 0; j < messageColumns.size(); j++) {
-			data.add(messageColumns[j], retriveCell("messages", msgIds[i], messageColumns[j]));
-		}
-		JSONBlock block;
-		block.add(data.toString());
-		messages.add(block.toString());
-	}
-*/
+int DBHandler::getRows(std::string table) {
+	int columns, rows;
+	retriveFromTable("SELECT * FROM " + table + ";", rows, columns);
+	return rows;
+}
 
 std::string DBHandler::getLogs() {
-	std::vector<std::string> values;
-	std::vector<std::string> columnNames;
 	//Get IDs related to  the current system_datalogs_id
 	std::string courseCalculationId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
 	std::string windsensorId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
@@ -263,46 +234,24 @@ std::string DBHandler::getLogs() {
 
 	std::stringstream ss;
 
+	//create json string
 	try {
-		ss << getDataLogRow("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
-									"system_datalogs",std::to_string(m_latestDataLogId),values,columnNames) << ","
-		<< getDataLogRow("time,latitude,longitude,speed,heading,satellites_used",
-									"gps_datalogs",gpsId,values,columnNames) << ","
-		<< getDataLogRow("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
-									"course_calculation_datalogs", courseCalculationId,values,columnNames) << ","
-		<< getDataLogRow("heading,pitch,roll",
-									"compass_datalogs",compassModelId,values,columnNames) << ","
-		<< getDataLogRow("direction,speed,temperature",
-								"windsensor_datalogs",windsensorId,values,columnNames);
+		ss << getRowAsJson("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
+									"system_datalogs","system_datalogs",std::to_string(m_latestDataLogId)) << ","
+		<< getRowAsJson("time,latitude,longitude,speed,heading,satellites_used",
+									"gps_datalogs","gps_datalogs",gpsId) << ","
+		<< getRowAsJson("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
+									"course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId) << ","
+		<< getRowAsJson("heading,pitch,roll",
+									"compass_datalogs","compass_datalogs",compassModelId) << ","
+		<< getRowAsJson("direction,speed,temperature",
+								"windsensor_datalogs","windsensor_datalogs",windsensorId);
 		} catch(const char * error) {
 			std::cout << error << std::endl;
 			m_logger.error(error);
 		}
-
-	// getDataLogs(std::to_string(m_latestDataLogId),values,columnNames);
-
-	// JSON data formatting
-	// JSONArray datalogs;
-	// datalogs.setName("datalogs");
-	//
-	// JSONData data;
-	//
-	// for (auto i = 0; i < values.size(); i++) {
-	// 	data.add(columnNames.at(i),values.at(i));
-	// }
-	//
-	// JSONBlock block;
-	// block.add(data.toString());
-	// datalogs.add(block.toString());
-	//
-	// JSONBlock main;
-	// main.add(datalogs.toString());
-
-	// std::string json = formatDatalogsToJson("systemDatalogs",values,columnNames);
-	// std::cout << json << std::endl;
 	JSONBlock main;
 	main.add(ss.str());
-	std::cout << main.toString() << std::endl;
 	return main.toString();
 }
 
@@ -361,19 +310,52 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 	insert("scanning_measurements", fields.str(), values.str());
 }
 
+std::string DBHandler::getWaypoints() {
+	std::string result = "";
+	int rows = 0;
+	std::stringstream ss;
+	std::string wp = "waypoint_";
+	try {
+		rows = getRows("waypoints");
+		for(auto i = 1; i < rows; ++i) {
+			ss << getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(i),std::to_string(i)) << ",";
+		}
+		ss << getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(rows),std::to_string(rows));
+	} catch (const char * error) {
+		m_logger.error("error in DBHandler::getWaypoints()");
+		std::stringstream ss;
+		ss << "error in DBHandler::getWaypoints() : " << error;
+		throw ss.str();
+	}
+
+	JSONBlock block;
+	block.add(ss.str());
+	return block.toString();
+}
+
+void DBHandler::clearDatalogTables() {
+	clearTable("system_datalogs");
+	clearTable("compass_datalogs");
+	clearTable("course_calculation_datalogs");
+	clearTable("gps_datalogs");
+	clearTable("windsensor_datalogs");
+
+}
 
 ////////////////////////////////////////////////////////////////////
 // private helpers
 ////////////////////////////////////////////////////////////////////
 
-std::string DBHandler::getDataLogRow(std::string select, std::string table, std::string id ,std::vector<std::string> &values, std::vector<std::string> &columnNames) {
+std::string DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id) {
 	int rows = 0, columns = 0;
+	std::vector<std::string> values;
+	std::vector<std::string> columnNames;
 	char** results;
 
 	try {
 		results = retriveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::getDataLogRow: " << error << std::endl;
+		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
 	}
 
 	for(int i = 0; i < columns*2; ++i) {
@@ -382,7 +364,7 @@ std::string DBHandler::getDataLogRow(std::string select, std::string table, std:
 		else
 			values.push_back(results[i]);
 	}
-	std::string result = formatDatalogsToJson(table,values, columnNames);
+	std::string result = formatRowToJson(key,values, columnNames);
 	values.clear();
 	columnNames.clear();
 	return result;
@@ -489,8 +471,8 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	if(!waypointModel.id.empty())
 	{
-		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
-		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
+		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "latitude").c_str());
+		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "longitude").c_str());
 		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
 		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
 
@@ -529,9 +511,9 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     }
 }
 
-std::string DBHandler::formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames) {
+std::string DBHandler::formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames) {
 	JSONArray datalogs;
-	datalogs.setName(logName);
+	datalogs.setName(key);
 
 	JSONData data;
 

@@ -20,13 +20,15 @@ private:
 	sqlite3 *m_db;
 	char *m_error;
 	int m_latestDataLogId;
+	int m_latestWaypointId;
 	Logger m_logger;
 	std::string m_filePath;
 
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
 
-	std::string getDataLogRow(std::string select, std::string table, std::string id, std::vector<std::string> &values, std::vector<std::string> &columNames);
+	//returns table row in Json format, uses table as key
+	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id);
 
 	//retrive data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
@@ -41,7 +43,8 @@ private:
 	//help function used in insertDataLog
 	int insertLog(std::string table, std::string values);
 
-	std::string formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames);
+	//formats datarows to json using
+	std::string formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames);
 
 public:
 
@@ -71,10 +74,10 @@ public:
 
 	void clearTable(std::string table);
 
-    //retrieve one value from a table as string
+  //retrieve one value from a table as string
 	std::string retriveCell(std::string table, std::string id, std::string column);
 
-    //retrieve one value from a table as integer
+  //retrieve one value from a table as integer
 	int retriveCellAsInt(std::string table, std::string id, std::string column);
 
 	// returns first row in datalogs as JSON
@@ -95,6 +98,13 @@ public:
 
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
 
+	//returns total rows from table
+	int getRows(std::string table);
+
+	//returns waypoints
+	std::string getWaypoints();
+
+	void clearDatalogTables();
 };
 
 #endif
