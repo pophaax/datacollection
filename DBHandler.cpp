@@ -14,13 +14,41 @@ DBHandler::DBHandler(std::string filePath) :
 	m_filePath(filePath)
 {
 	m_latestDataLogId = 1;
-
 }
 
 
 DBHandler::~DBHandler(void) {
 	closeDatabase();
 }
+
+
+void DBHandler::openDatabase(std::string fileName) {
+
+	// check if file exists
+	FILE* db_file = fopen(fileName.c_str(), "r");
+	if (!db_file) {
+		std::string error = "DBHandler::openDatabase(), " + fileName +
+			" not found.";
+		throw error.c_str();
+	}
+	fclose(db_file);
+
+	m_rc = sqlite3_open(fileName.c_str(), &m_db);
+
+	if (m_rc) {
+		std::stringstream errorStream;
+		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
+
+		throw errorStream.str().c_str();
+	}
+}
+
+
+void DBHandler::closeDatabase(void) {
+	sqlite3_close(m_db);
+	m_db = NULL;
+}
+
 
 void DBHandler::insertDataLog(
 	SystemStateModel systemState,
@@ -189,6 +217,39 @@ void DBHandler::clearTable(std::string table) {
 	queryTable("DELETE FROM " + table + ";");
 }
 
+/*	for (unsigned int i = 0; i < logIds.size(); i++) {
+		JSONData data;
+
+		for (unsigned int j = 0; j < datalogColumns.size(); j++) {
+			data.add(datalogColumns[j], retriveCell("datalogs", logIds[i], datalogColumns[j]));
+		}
+
+		vector<string> stateColumns = getColumnInfo("name", "state");
+		for (unsigned int j = 0; j < stateColumns.size(); j++) {
+			data.add(stateColumns[j], retriveCell("state", "1", stateColumns[j]));
+		}
+
+		JSONBlock block;
+		block.add(data.toString());
+		datalogs.add(block.toString());
+	}
+
+	vector<string> msgIds;
+	msgIds = getTableIds("messages");
+	JSONArray messages;
+	messages.setName("messages");
+	vector<string> messageColumns = getColumnInfo("name", "messages");
+
+	for (unsigned int i = 0; i < msgIds.size(); i++) {
+		JSONData data;
+		for (unsigned int j = 0; j < messageColumns.size(); j++) {
+			data.add(messageColumns[j], retriveCell("messages", msgIds[i], messageColumns[j]));
+		}
+		JSONBlock block;
+		block.add(data.toString());
+		messages.add(block.toString());
+	}
+*/
 
 std::string DBHandler::getLogs() {
 	std::vector<std::string> values;
@@ -218,6 +279,27 @@ std::string DBHandler::getLogs() {
 			m_logger.error(error);
 		}
 
+	// getDataLogs(std::to_string(m_latestDataLogId),values,columnNames);
+
+	// JSON data formatting
+	// JSONArray datalogs;
+	// datalogs.setName("datalogs");
+	//
+	// JSONData data;
+	//
+	// for (auto i = 0; i < values.size(); i++) {
+	// 	data.add(columnNames.at(i),values.at(i));
+	// }
+	//
+	// JSONBlock block;
+	// block.add(data.toString());
+	// datalogs.add(block.toString());
+	//
+	// JSONBlock main;
+	// main.add(datalogs.toString());
+
+	// std::string json = formatDatalogsToJson("systemDatalogs",values,columnNames);
+	// std::cout << json << std::endl;
 	JSONBlock main;
 	main.add(ss.str());
 	std::cout << main.toString() << std::endl;
@@ -229,6 +311,7 @@ void DBHandler::removeLogs(std::string lines) {
 	JSONDecode decoder;
 	decoder.addJSON(lines);
 	while (decoder.hasNext()) {
+		// std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id_system") << "\n";
 		queryTable("DELETE FROM system_datalogs WHERE id = " + decoder.getData("id_system") + ";");
 	}
 }
@@ -246,6 +329,7 @@ void DBHandler::insert(std::string table, std::string fields, std::string values
 
 void DBHandler::insertScan(std::string waypoint_id, PositionModel position, float temperature, std::string timestamp)
 {
+	//std::string waypoint_id = getMinIdFromTable("waypoints");
 
 	std::string i = "null", j = "null";
 
@@ -281,38 +365,6 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 ////////////////////////////////////////////////////////////////////
 // private helpers
 ////////////////////////////////////////////////////////////////////
-
-
-void DBHandler::openDatabase() {
-
-	// check if file exists
-	FILE* db_file = fopen(m_filePath.c_str(), "r");
-	if (!db_file) {
-		std::string error = "DBHandler::openDatabase(), " + m_filePath +
-			" not found.";
-		throw error.c_str();
-	}
-	fclose(db_file);
-
-	/* 3rd param: Flag that sets threading mode
-	 * 4th param: Name of the vfs object, uses default if it is NULL
-	 */
-	m_rc = sqlite3_open_v2(m_filePath.c_str(), &m_db, SQLITE_OPEN_NOMUTEX, NULL);
-	std::cout << "## Resultcode: " << m_rc << std::endl;
-	
-	if (m_rc) {
-		std::stringstream errorStream;
-		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-
-		throw errorStream.str().c_str();
-	}
-}
-
-
-void DBHandler::closeDatabase(void) {
-	sqlite3_close(m_db);
-	m_db = NULL;
-}
 
 std::string DBHandler::getDataLogRow(std::string select, std::string table, std::string id ,std::vector<std::string> &values, std::vector<std::string> &columnNames) {
 	int rows = 0, columns = 0;

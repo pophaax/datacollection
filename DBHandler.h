@@ -43,14 +43,13 @@ private:
 
 	std::string formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames);
 
-	void openDatabase();
-
-	void closeDatabase();
-	
 public:
 
 	DBHandler(std::string filePath);
 	~DBHandler(void);
+
+	void openDatabase(std::string fileName);
+	void closeDatabase();
 
 	void insertDataLog(
 		SystemStateModel systemState,
