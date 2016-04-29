@@ -27,6 +27,10 @@ private:
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
 
+	// same as queryTable but neither opens nor closes the database
+	// ** USE WITH CAUTION, WITH GREAT POWER COMES GREAT RESPONSIBILITY **
+	void queryTablewithOpenDatabase(std::string sqlINSERT);
+
 	//returns table row in Json format, uses table as key
 	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id);
 
@@ -46,12 +50,15 @@ private:
 	//formats datarows to json using
 	std::string formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames);
 
+
+
 public:
 
 	DBHandler(std::string filePath);
 	~DBHandler(void);
+	
+	void openDatabase();
 
-	void openDatabase(std::string fileName);
 	void closeDatabase();
 
 	void insertDataLog(
@@ -105,6 +112,9 @@ public:
 	std::string getWaypoints();
 
 	void clearDatalogTables();
+
+
+	void threadTestMethod();
 };
 
 #endif
