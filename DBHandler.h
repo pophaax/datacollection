@@ -8,6 +8,9 @@
 #include "sqlite3.h"
 #include "logger/Logger.h"
 
+#include "json/src/json.hpp"
+using Json = nlohmann::json;
+
 class SystemStateModel;
 class WaypointModel;
 class PositionModel;
@@ -32,7 +35,8 @@ private:
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retriveFromTable(std::string sqlSELECT, int &rows, int &columns);
 
-	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id);
+	//returns table row in Json format, uses table as key
+	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id,Json& json);
 
 	//gets the id column from a given table
 	std::vector<std::string> getTableIds(std::string table);
@@ -76,6 +80,8 @@ public:
 
 	void clearTable(std::string table);
 
+	void updateConfigs(std::string configs);
+
     //retrieve one value from a table as string
 	std::string retriveCell(std::string table, std::string id, std::string column);
 
@@ -106,4 +112,3 @@ public:
 };
 
 #endif
- 
