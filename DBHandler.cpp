@@ -14,12 +14,63 @@ DBHandler::DBHandler(std::string filePath) :
 	m_filePath(filePath)
 {
 	m_latestDataLogId = 1;
-	m_latestWaypointId = 1;
 }
 
 
 DBHandler::~DBHandler(void) {
 	closeDatabase();
+}
+
+
+void DBHandler::openDatabase(std::string fileName) {
+
+	// check if file exists
+	FILE* db_file = fopen(fileName.c_str(), "r");
+	if (!db_file) {
+		std::string error = "DBHandler::openDatabase(), " + fileName +
+			" not found.";
+		throw error.c_str();
+	}
+	fclose(db_file);
+
+	m_rc = sqlite3_open(fileName.c_str(), &m_db);
+
+	if (m_rc) {
+		std::stringstream errorStream;
+		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
+
+		throw errorStream.str().c_str();
+	}
+}
+
+
+void DBHandler::closeDatabase(void) {
+	sqlite3_close(m_db);
+	m_db = NULL;
+}
+
+std::string DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id) {
+	int rows = 0, columns = 0;
+	std::vector<std::string> values;
+	std::vector<std::string> columnNames;
+	char** results;
+
+	try {
+		results = retriveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
+	} catch(const char * error) {
+		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
+	}
+
+	for(int i = 0; i < columns*2; ++i) {
+		if(i < columns)
+			columnNames.push_back(results[i]);
+		else
+			values.push_back(results[i]);
+	}
+	std::string result = formatRowToJson(key,values, columnNames);
+	values.clear();
+	columnNames.clear();
+	return result;
 }
 
 void DBHandler::insertDataLog(
@@ -34,11 +85,9 @@ void DBHandler::insertDataLog(
 	int waypoint_id,
 	double true_wind_direction_calc) {
 
-/*
 	if(m_db == NULL) {
 		throw "DBHandler::insertDataLog(), no db connection";
 	}
-*/
 
 	std::stringstream gpsValues;
 	std::stringstream courseCalculationValues;
@@ -198,6 +247,8 @@ int DBHandler::getRows(std::string table) {
 }
 
 std::string DBHandler::getLogs() {
+	std::vector<std::string> values;
+	std::vector<std::string> columnNames;
 	//Get IDs related to  the current system_datalogs_id
 	std::string courseCalculationId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
 	std::string windsensorId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
@@ -205,26 +256,27 @@ std::string DBHandler::getLogs() {
 	std::string gpsId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
 	// Get required fields from datalogs
 
-
 	std::stringstream ss;
 
-	//create json string
 	try {
-		ss << getRowAsJson("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
-									"system_datalogs","system_datalogs",std::to_string(m_latestDataLogId)) << ","
-		<< getRowAsJson("time,latitude,longitude,speed,heading,satellites_used",
-									"gps_datalogs","gps_datalogs",gpsId) << ","
-		<< getRowAsJson("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
-									"course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId) << ","
-		<< getRowAsJson("heading,pitch,roll",
-									"compass_datalogs","compass_datalogs",compassModelId) << ","
-		<< getRowAsJson("direction,speed,temperature",
-								"windsensor_datalogs","windsensor_datalogs",windsensorId);
+		ss << getDataLogRow("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
+									"system_datalogs",std::to_string(m_latestDataLogId),values,columnNames) << ","
+		<< getDataLogRow("time,latitude,longitude,speed,heading,satellites_used",
+									"gps_datalogs",gpsId,values,columnNames) << ","
+		<< getDataLogRow("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
+									"course_calculation_datalogs", courseCalculationId,values,columnNames) << ","
+		<< getDataLogRow("heading,pitch,roll",
+									"compass_datalogs",compassModelId,values,columnNames) << ","
+		<< getDataLogRow("direction,speed,temperature",
+								"windsensor_datalogs",windsensorId,values,columnNames);
 		} catch(const char * error) {
+			std::cout << error << std::endl;
 			m_logger.error(error);
 		}
+
 	JSONBlock main;
 	main.add(ss.str());
+	std::cout << main.toString() << std::endl;
 	return main.toString();
 }
 
@@ -241,39 +293,6 @@ void DBHandler::removeLogs(std::string lines) {
 
 void DBHandler::deleteRow(std::string table, std::string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
-}
-
-void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
-
-	int rows, columns;
-    char** results;
-  	results = retriveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
-    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
-    if (rows * columns < 1 || results[1] == '\0') {
-    	waypointModel.id = "";
-    }
-    else {
-    	waypointModel.id = results[1];
-    }
-
-	if(!waypointModel.id.empty())
-	{
-		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
-		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
-		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
-		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
-
-		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
-			waypointModel.id + ";", rows, columns);
-
-		if (rows * columns < 1 || results[1] == '\0') {
-			waypointModel.time = 0;
-		}
-		else {
-			waypointModel.time = retriveCellAsInt("waypoint_stationary", waypointModel.id, "time");
-		}
-	}
-
 }
 
 void DBHandler::insert(std::string table, std::string fields, std::string values)
@@ -348,51 +367,19 @@ void DBHandler::clearDatalogTables() {
 
 }
 
+
 ////////////////////////////////////////////////////////////////////
 // private helpers
 ////////////////////////////////////////////////////////////////////
 
-void DBHandler::openDatabase() {
-
-	// check if file exists
-	FILE* db_file = fopen(m_filePath.c_str(), "r");
-	if (!db_file) {
-		std::string error = "DBHandler::openDatabase(), " + m_filePath +
-			" not found.";
-		throw error.c_str();
-	}
-	fclose(db_file);
-
-	m_rc = sqlite3_open_v2(m_filePath.c_str(), &m_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_NOMUTEX, NULL);
-	sqlite3_busy_timeout(m_db, 5000);
-	//m_rc = sqlite3_open(m_filePath.c_str(), &m_db);
-	
-	/*
-	if (m_rc) {
-		std::stringstream errorStream;
-		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-
-		throw errorStream.str().c_str();
-	}
-	*/
-}
-
-
-void DBHandler::closeDatabase(void) {
-	sqlite3_close(m_db);
-	m_db = NULL;
-}
-
-std::string DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id) {
+std::string DBHandler::getDataLogRow(std::string select, std::string table, std::string id ,std::vector<std::string> &values, std::vector<std::string> &columnNames) {
 	int rows = 0, columns = 0;
-	std::vector<std::string> values;
-	std::vector<std::string> columnNames;
 	char** results;
 
 	try {
 		results = retriveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
+		std::cout << "error in DBHandler::getDataLogRow: " << error << std::endl;
 	}
 
 	for(int i = 0; i < columns*2; ++i) {
@@ -401,7 +388,7 @@ std::string DBHandler::getRowAsJson(std::string select, std::string table, std::
 		else
 			values.push_back(results[i]);
 	}
-	std::string result = formatRowToJson(key,values, columnNames);
+	std::string result = formatDatalogsToJson(table,values, columnNames);
 	values.clear();
 	columnNames.clear();
 	return result;
@@ -414,13 +401,8 @@ int DBHandler::insertLog(std::string table, std::string values) {
 	// std::cout << ss.str() << std::endl;
 
 	try {
-		openDatabase();
-
-		queryTablewithOpenDatabase(ss.str());
+		queryTable(ss.str());
 		m_latestDataLogId = sqlite3_last_insert_rowid(m_db);
-
-		closeDatabase();
-
 	} catch(const char * error) {
 		std::cout << "error in DBHandler::insertLog: " << error << std::endl;
 	}
@@ -428,42 +410,6 @@ int DBHandler::insertLog(std::string table, std::string values) {
 }
 
 void DBHandler::queryTable(std::string sqlINSERT) {
-	openDatabase();
-
-	if (m_db != NULL) {
-		int resultcode = 5;
-/*
-		do {
-			try {
-				resultcode = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-			} catch (const char* e) {
-				std::cout << "QUERY ERROR: " << e << std::endl;
-			}
-			
-			//std::cout << "QUERY RESULT: " << m_rc << std::endl;
-			usleep(100);
-		} while(resultcode == SQLITE_BUSY);
-*/
-		resultcode = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-
-
-		if (m_error != NULL) {
-			std::stringstream errorStream;
-			errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(m_db);
-			sqlite3_free(m_error);
-
-			throw errorStream.str().c_str();
-		}
-	}
-	else {
-		throw "DBHandler::queryTable(), no db connection";
-	}
-
-
-	closeDatabase();
-}
-
-void DBHandler::queryTablewithOpenDatabase(std::string sqlINSERT) {
 	if (m_db != NULL) {
 
 		m_rc = sqlite3_exec(m_db, sqlINSERT.c_str(), NULL, NULL, &m_error);
@@ -482,13 +428,11 @@ void DBHandler::queryTablewithOpenDatabase(std::string sqlINSERT) {
 }
 
 char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &columns) {
-	openDatabase();
 	char **results = NULL;
 
 	if (m_db != NULL) {
 
-		m_rc = sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
-		//std::cout << "RETRIEVE RESULT: " << m_rc << std::endl;
+		sqlite3_get_table(m_db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
@@ -502,7 +446,6 @@ char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &column
 		throw "DBHandler::retrieveFromTable(), no db connection";
 	}
 
-	closeDatabase();
 	return results;
 }
 
@@ -518,7 +461,7 @@ std::vector<std::string> DBHandler::getTableIds(std::string table) {
 
     return ids;
 }
- 
+
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
 	int rows, columns;
     char** results;
@@ -536,6 +479,40 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
 	}
     return types;
 }
+
+void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
+
+	int rows, columns;
+    char** results;
+    results = retriveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
+    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
+    if (rows * columns < 1 || results[1] == '\0') {
+    	waypointModel.id = "";
+    }
+    else {
+    	waypointModel.id = results[1];
+    }
+
+	if(!waypointModel.id.empty())
+	{
+		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
+		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
+		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
+		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
+
+		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
+			waypointModel.id + ";", rows, columns);
+
+		if (rows * columns < 1 || results[1] == '\0') {
+			waypointModel.time = 0;
+		}
+		else {
+			waypointModel.time = retriveCellAsInt("waypoint_stationary", waypointModel.id, "time");
+		}
+	}
+
+}
+
 
 void DBHandler::changeOneValue(std::string table, std::string id,std::string newValue, std::string colName){
 
@@ -558,6 +535,23 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     }
 }
 
+std::string DBHandler::formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames) {
+	JSONArray datalogs;
+	datalogs.setName(logName);
+
+	JSONData data;
+
+	for (auto i = 0; i < values.size(); i++) {
+		data.add(columnNames.at(i),values.at(i));
+	}
+
+	JSONBlock block;
+	block.add(data.toString());
+	datalogs.add(block.toString());
+
+	return datalogs.toString();
+}
+
 std::string DBHandler::formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames) {
 	JSONArray datalogs;
 	datalogs.setName(key);
@@ -573,13 +567,4 @@ std::string DBHandler::formatRowToJson(std::string key,std::vector<std::string> 
 	datalogs.add(block.toString());
 
 	return datalogs.toString();
-}
-
-
-void DBHandler::threadTestMethod() {
-	openDatabase();
-	int i1=0, i2=0;
-
-	//queryTable("INSERT INTO mock (GPS, Windsensor, Compass, Position, Maestro) VALUES(1,1,1,1,1)");
-	closeDatabase();
 }
