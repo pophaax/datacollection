@@ -21,34 +21,6 @@ DBHandler::~DBHandler(void) {
 	closeDatabase();
 }
 
-
-void DBHandler::openDatabase(std::string fileName) {
-
-	// check if file exists
-	FILE* db_file = fopen(fileName.c_str(), "r");
-	if (!db_file) {
-		std::string error = "DBHandler::openDatabase(), " + fileName +
-			" not found.";
-		throw error.c_str();
-	}
-	fclose(db_file);
-
-	m_rc = sqlite3_open(fileName.c_str(), &m_db);
-
-	if (m_rc) {
-		std::stringstream errorStream;
-		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
-
-		throw errorStream.str().c_str();
-	}
-}
-
-
-void DBHandler::closeDatabase(void) {
-	sqlite3_close(m_db);
-	m_db = NULL;
-}
-
 std::string DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id) {
 	int rows = 0, columns = 0;
 	std::vector<std::string> values;
@@ -371,6 +343,33 @@ void DBHandler::clearDatalogTables() {
 ////////////////////////////////////////////////////////////////////
 // private helpers
 ////////////////////////////////////////////////////////////////////
+
+void DBHandler::openDatabase() {
+
+	// check if file exists
+	FILE* db_file = fopen(m_filePath.c_str(), "r");
+	if (!db_file) {
+		std::string error = "DBHandler::openDatabase(), " + m_filePath +
+			" not found.";
+		throw error.c_str();
+	}
+	fclose(db_file);
+
+	m_rc = sqlite3_open(m_filePath.c_str(), &m_db);
+
+	if (m_rc) {
+		std::stringstream errorStream;
+		errorStream << "DBHandler::openDatabase(), " << sqlite3_errmsg(m_db);
+
+		throw errorStream.str().c_str();
+	}
+}
+
+
+void DBHandler::closeDatabase(void) {
+	sqlite3_close(m_db);
+	m_db = NULL;
+}
 
 std::string DBHandler::getDataLogRow(std::string select, std::string table, std::string id ,std::vector<std::string> &values, std::vector<std::string> &columnNames) {
 	int rows = 0, columns = 0;
