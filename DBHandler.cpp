@@ -171,7 +171,6 @@ void DBHandler::updateTable(std::string table, std::string data) {
 		}
 		catch( const char * error) {
 			m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
-			m_logger.error(sqlite3_errmsg(m_db));
 			// throw std::string("Error in DBHandler::updateTable" + std::string(error)).c_str();
 		}
 }
@@ -387,28 +386,6 @@ void DBHandler::closeDatabase(sqlite3* connection) {
 	} else {
 		throw "DBHandler::closeDatabase() : connection is already null";
 	}
-}
-
-std::string DBHandler::getDataLogRow(std::string select, std::string table, std::string id ,std::vector<std::string> &values, std::vector<std::string> &columnNames) {
-	int rows = 0, columns = 0;
-	char** results;
-
-	try {
-		results = retriveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
-	} catch(const char * error) {
-		std::cout << "error in DBHandler::getDataLogRow: " << error << std::endl;
-	}
-
-	for(int i = 0; i < columns*2; ++i) {
-		if(i < columns)
-			columnNames.push_back(results[i]);
-		else
-			values.push_back(results[i]);
-	}
-	std::string result = formatDatalogsToJson(table,values, columnNames);
-	values.clear();
-	columnNames.clear();
-	return result;
 }
 
 int DBHandler::insertLog(std::string table, std::string values) {
