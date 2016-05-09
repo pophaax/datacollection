@@ -31,9 +31,9 @@ private:
 	// use with caution
 	void queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db);
 	
-	//retrive data from given table/tables, return value is a C 2D char array
+	//retrieve data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
-	char** retriveFromTable(std::string sqlSELECT, int &rows, int &columns);
+	char** retrieveFromTable(std::string sqlSELECT, int &rows, int &columns);
 
 	//returns table row in Json format, uses table as key
 	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id,Json& json);
@@ -85,10 +85,10 @@ public:
 	void updateConfigs(std::string configs);
 
     //retrieve one value from a table as string
-	std::string retriveCell(std::string table, std::string id, std::string column);
+	std::string retrieveCell(std::string table, std::string id, std::string column);
 
     //retrieve one value from a table as integer
-	int retriveCellAsInt(std::string table, std::string id, std::string column);
+	int retrieveCellAsInt(std::string table, std::string id, std::string column);
 
 	// returns first row in datalogs as JSON
 	std::string getLogs();

@@ -27,7 +27,7 @@ std::string DBHandler::getRowAsJson(std::string select, std::string table, std::
 	char** results;
 
 	try {
-		results = retriveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
+		results = retrieveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
 		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
 	}
@@ -139,7 +139,7 @@ bool DBHandler::revChanged(std::string toCheck, std::string serverRevs) {
 	if (getTableIds("state").size() == 0) {
 		return true;
 	} else {
-		localConfig = retriveCell("state", "1", toCheck);
+		localConfig = retrieveCell("state", "1", toCheck);
 	}
 
 	if ( serverConfig.compare(localConfig) != 0 ) {
@@ -176,22 +176,22 @@ void DBHandler::updateTable(std::string table, std::string data) {
 }
 
 
-std::string DBHandler::retriveCell(std::string table, std::string id, std::string column) {
+std::string DBHandler::retrieveCell(std::string table, std::string id, std::string column) {
 	std::string query = "SELECT " + column + " FROM " + table +" WHERE id=" + id + ";";
 
 	int rows, columns;
     char** results;
-    results = retriveFromTable(query, rows, columns);
+    results = retrieveFromTable(query, rows, columns);
 
     if (columns < 1) {
 		std::stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no columns from Query: " << query;
+		errorStream << "DBHandler::retrieveCell(), no columns from Query: " << query;
     	throw errorStream.str().c_str();
     }
 
     if (rows < 1) {
 		std::stringstream errorStream;
-		errorStream << "DBHandler::retriveCell(), no rows from Query: " << query;
+		errorStream << "DBHandler::retrieveCell(), no rows from Query: " << query;
     	throw errorStream.str().c_str();
     }
 
@@ -212,12 +212,12 @@ void DBHandler::updateConfigs(std::string configs) {
 }
 
 
-int DBHandler::retriveCellAsInt(std::string table, std::string id, std::string column) {
+int DBHandler::retrieveCellAsInt(std::string table, std::string id, std::string column) {
 	try {
-		return atoi(retriveCell(table, id, column).c_str());
+		return atoi(retrieveCell(table, id, column).c_str());
 	}
 	catch (const char *  e) {
-		std::cout << "exception thrown in retriveCellAsInt, is returned cell a int?  " << e << std::endl;
+		std::cout << "exception thrown in retrieveCellAsInt, is returned cell a int?  " << e << std::endl;
 		return 0;
 	}
 
@@ -230,16 +230,16 @@ void DBHandler::clearTable(std::string table) {
 
 int DBHandler::getRows(std::string table) {
 	int columns, rows;
-	retriveFromTable("SELECT * FROM " + table + ";", rows, columns);
+	retrieveFromTable("SELECT * FROM " + table + ";", rows, columns);
 	return rows;
 }
 
 std::string DBHandler::getLogs() {
 	//Get IDs related to  the current system_datalogs_id
-	std::string courseCalculationId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
-	std::string windsensorId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
-	std::string compassModelId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
-	std::string gpsId = retriveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
+	std::string courseCalculationId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
+	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
+	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
+	std::string gpsId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
 	// Get required fields from datalogs
 
 	Json json;
@@ -290,8 +290,8 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 	std::string i = "null", j = "null";
 
 	try {
-		i = retriveCell("waypoint_index", waypoint_id, "i");
-		j = retriveCell("waypoint_index", waypoint_id, "j");
+		i = retrieveCell("waypoint_index", waypoint_id, "i");
+		j = retrieveCell("waypoint_index", waypoint_id, "j");
 	} catch (const char * error) {
 		m_logger.error(error);
 	}
@@ -453,7 +453,7 @@ void DBHandler::queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db) {
 	}
 }
 
-char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &columns) {
+char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &columns) {
 	sqlite3* db = openDatabase();
 	char **results = NULL;
 
@@ -483,7 +483,7 @@ char** DBHandler::retriveFromTable(std::string sqlSELECT, int &rows, int &column
 std::vector<std::string> DBHandler::getTableIds(std::string table) {
 		int rows, columns;
     char** results;
-    results = retriveFromTable("SELECT id FROM " + table + ";", rows, columns);
+    results = retrieveFromTable("SELECT id FROM " + table + ";", rows, columns);
 
     std::vector<std::string> ids;
     for (int i = 1; i <= rows; i++) {
@@ -496,7 +496,7 @@ std::vector<std::string> DBHandler::getTableIds(std::string table) {
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
 	int rows, columns;
     char** results;
-    results = retriveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
+    results = retrieveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
     std::vector<std::string> types;
     int infoIndex = 0;
     for (int i = 0; i < columns; i++) {
@@ -515,7 +515,7 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	int rows, columns;
     char** results;
-    results = retriveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
+    results = retrieveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
     //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
     if (rows * columns < 1 || results[1] == '\0') {
     	waypointModel.id = "";
@@ -526,19 +526,19 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	if(!waypointModel.id.empty())
 	{
-		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "latitude").c_str());
-		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "longitude").c_str());
-		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
-		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
+		waypointModel.positionModel.latitude = atof(retrieveCell("waypoints", waypointModel.id, "latitude").c_str());
+		waypointModel.positionModel.longitude = atof(retrieveCell("waypoints", waypointModel.id, "longitude").c_str());
+		waypointModel.radius = retrieveCellAsInt("waypoints", waypointModel.id, "radius");
+		waypointModel.declination = retrieveCellAsInt("waypoints", waypointModel.id, "declination");
 
-		results = retriveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
+		results = retrieveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
 			waypointModel.id + ";", rows, columns);
 
 		if (rows * columns < 1 || results[1] == '\0') {
 			waypointModel.time = 0;
 		}
 		else {
-			waypointModel.time = retriveCellAsInt("waypoint_stationary", waypointModel.id, "time");
+			waypointModel.time = retrieveCellAsInt("waypoint_stationary", waypointModel.id, "time");
 		}
 	}
 
@@ -554,7 +554,7 @@ void DBHandler::changeOneValue(std::string table, std::string id,std::string new
 std::string DBHandler::getMinIdFromTable(std::string table) {
 	int rows, columns;
     char** results;
-    results = retriveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
+    results = retrieveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
     //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
     if (rows * columns < 1) {
     	return "";
