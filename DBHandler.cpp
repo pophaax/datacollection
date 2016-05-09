@@ -150,8 +150,9 @@ bool DBHandler::revChanged(std::string toCheck, std::string serverRevs) {
 
 
 void DBHandler::updateTable(std::string table, std::string data) {
-
+		// std::cout << table << std::endl;
 		std::vector<std::string> columns = getColumnInfo("name", table);
+		if(columns.size() <= 0 ) throw "ERROR in DBHandler::updateTable no such table " + table;
 		Json json = Json::parse(data);
 
 		std::stringstream ss;
@@ -164,13 +165,14 @@ void DBHandler::updateTable(std::string table, std::string data) {
 		std::string values = ss.str();
 		values = values.substr(0, values.size()-1);
 
-		int id = json["id"];
+		std::string id = json["id"];
 
 		try {
-			queryTable("UPDATE " + table + " " + values + " WHERE ID = " + std::to_string(id) + ";");
+			queryTable("UPDATE " + table + " " + values + " WHERE ID = " + id + ";");
 		}
 		catch( const char * error) {
 			m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
+			// m_logger.error(sqlite3_errmsg(m_db));
 			// throw std::string("Error in DBHandler::updateTable" + std::string(error)).c_str();
 		}
 }
@@ -199,15 +201,16 @@ std::string DBHandler::retrieveCell(std::string table, std::string id, std::stri
 }
 
 void DBHandler::updateConfigs(std::string configs) {
-	/*TODO*/
-	// Json json = Json::parse(configs);
-	//
-	// std::vector<std::string> vector;
-	//
-	// for (auto i : Json::iterator_wrapper(json))  {
-	// 	std::cout << i.key() << std::endl;
-	// 	// vector.push_back(i.key());
-	// }
+	Json json = Json::parse(configs);
+	std::vector<std::string> tables;
+
+	for (auto i : Json::iterator_wrapper(json))  {
+		tables.push_back(i.key());
+	}
+
+	for (auto table : tables) {
+			updateTable(table,json[table].dump());
+	}
 
 }
 
