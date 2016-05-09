@@ -374,6 +374,8 @@ sqlite3* DBHandler::openDatabase() {
 		throw errorStream.str().c_str();
 	}
 
+	// set a 5 second timeout
+	sqlite3_busy_timeout(connection, 5000);
 	return connection;
 }
 
@@ -413,9 +415,7 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		do {
-			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-		} while(resultcode == SQLITE_BUSY);
+		resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
@@ -436,9 +436,7 @@ void DBHandler::queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		do {
-			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-		} while(resultcode == SQLITE_BUSY);
+		resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
@@ -460,9 +458,7 @@ char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &colum
 	if (db != NULL) {
 		int resultcode = 0;
 
-		do {
-			resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
-		} while(resultcode == SQLITE_BUSY);
+		resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
