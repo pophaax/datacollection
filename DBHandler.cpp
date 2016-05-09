@@ -364,7 +364,7 @@ sqlite3* DBHandler::openDatabase() {
 	fclose(db_file);
 
 	do {
-		resultcode = sqlite3_open(m_filePath.c_str(), &connection);		
+		resultcode = sqlite3_open(m_filePath.c_str(), &connection);
 	} while(resultcode == SQLITE_BUSY);
 
 	if (resultcode) {
@@ -382,7 +382,7 @@ void DBHandler::closeDatabase(sqlite3* connection) {
 
 	if(connection != NULL) {
 		sqlite3_close(connection);
-		connection = NULL;		
+		connection = NULL;
 	} else {
 		throw "DBHandler::closeDatabase() : connection is already null";
 	}
@@ -526,8 +526,8 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	if(!waypointModel.id.empty())
 	{
-		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "lat").c_str());
-		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "lon").c_str());
+		waypointModel.positionModel.latitude = atof(retriveCell("waypoints", waypointModel.id, "latitude").c_str());
+		waypointModel.positionModel.longitude = atof(retriveCell("waypoints", waypointModel.id, "longitude").c_str());
 		waypointModel.radius = retriveCellAsInt("waypoints", waypointModel.id, "radius");
 		waypointModel.declination = retriveCellAsInt("waypoints", waypointModel.id, "declination");
 
