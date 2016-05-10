@@ -75,7 +75,10 @@ public:
 	bool revChanged(std::string toCheck, std::string serverRevs);
 
 	//updates table with json string (data)
-	void updateTable(std::string table, std::string data);
+	void updateTableJson(std::string table, std::string data);
+
+	//updates table using values given
+	void updateTable(std::string table, std::string column, std::string value, std::string id);
 
 	void clearTable(std::string table);
 

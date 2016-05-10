@@ -149,32 +149,41 @@ bool DBHandler::revChanged(std::string toCheck, std::string serverRevs) {
 }
 
 
-void DBHandler::updateTable(std::string table, std::string data) {
-		// std::cout << table << std::endl;
-		std::vector<std::string> columns = getColumnInfo("name", table);
-		if(columns.size() <= 0 ) throw "ERROR in DBHandler::updateTable no such table " + table;
-		Json json = Json::parse(data);
+void DBHandler::updateTableJson(std::string table, std::string data) {
+	// std::cout << table << std::endl;
+	std::vector<std::string> columns = getColumnInfo("name", table);
+	if(columns.size() <= 0 ) throw "ERROR in DBHandler::updateTable no such table " + table;
+	Json json = Json::parse(data);
 
-		std::stringstream ss;
+	std::stringstream ss;
 
-		//start at i = 1 to skip the id
-		ss << "SET ";
-		for (auto i = 1; i < json.size(); i++) {
-			ss << columns.at(i) << " = " << json[columns.at(i)] << ",";
-		}
-		std::string values = ss.str();
-		values = values.substr(0, values.size()-1);
+	//start at i = 1 to skip the id
+	ss << "SET ";
+	for (auto i = 1; i < json.size(); i++) {
+		ss << columns.at(i) << " = " << json[columns.at(i)] << ",";
+	}
+	std::string values = ss.str();
+	values = values.substr(0, values.size()-1);
 
-		std::string id = json["id"];
+	std::string id = json["id"];
 
-		try {
-			queryTable("UPDATE " + table + " " + values + " WHERE ID = " + id + ";");
-		}
-		catch( const char * error) {
-			m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
-			// m_logger.error(sqlite3_errmsg(m_db));
-			// throw std::string("Error in DBHandler::updateTable" + std::string(error)).c_str();
-		}
+	try {
+		queryTable("UPDATE " + table + " " + values + " WHERE ID = " + id + ";");
+	}
+	catch( const char * error) {
+		m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
+		// m_logger.error(sqlite3_errmsg(m_db));
+		// throw std::string("Error in DBHandler::updateTable" + std::string(error)).c_str();
+	}
+}
+
+void DBHandler::updateTable(std::string table, std::string column, std::string value, std::string id) {
+	try {
+		queryTable("UPDATE " + table + " SET " + column + " = " + value + " WHERE ID = " + id + ";");
+	}
+	catch( const char * error) {
+		m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
+	}
 }
 
 
@@ -209,7 +218,7 @@ void DBHandler::updateConfigs(std::string configs) {
 	}
 
 	for (auto table : tables) {
-			updateTable(table,json[table].dump());
+		updateTableJson(table,json[table].dump());
 	}
 
 }
