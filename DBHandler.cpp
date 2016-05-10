@@ -564,37 +564,3 @@ std::string DBHandler::getMinIdFromTable(std::string table) {
     	return results[1];
     }
 }
-
-std::string DBHandler::formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames) {
-	JSONArray datalogs;
-	datalogs.setName(logName);
-
-	JSONData data;
-
-	for (auto i = 0; i < values.size(); i++) {
-		data.add(columnNames.at(i),values.at(i));
-	}
-
-	JSONBlock block;
-	block.add(data.toString());
-	datalogs.add(block.toString());
-
-	return datalogs.toString();
-}
-
-std::string DBHandler::formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames) {
-	JSONArray datalogs;
-	datalogs.setName(key);
-
-	JSONData data;
-
-	for (auto i = 0; i < values.size(); i++) {
-		data.add(columnNames.at(i),values.at(i));
-	}
-
-	JSONBlock block;
-	block.add(data.toString());
-	datalogs.add(block.toString());
-
-	return datalogs.toString();
-}

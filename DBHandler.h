@@ -30,7 +30,7 @@ private:
 	// same as above but will neither open nor close the database
 	// use with caution
 	void queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db);
-	
+
 	//retrieve data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retrieveFromTable(std::string sqlSELECT, int &rows, int &columns);
@@ -46,10 +46,6 @@ private:
 
 	//help function used in insertDataLog
 	int insertLog(std::string table, std::string values);
-
-	std::string formatDatalogsToJson(std::string logName,std::vector<std::string> values, std::vector<std::string> columnNames);
-
-	std::string formatRowToJson(std::string key,std::vector<std::string> values, std::vector<std::string> columnNames);
 
 	sqlite3* openDatabase();
 
@@ -78,6 +74,7 @@ public:
 
 	bool revChanged(std::string toCheck, std::string serverRevs);
 
+	//updates table with json string (data)
 	void updateTable(std::string table, std::string data);
 
 	void clearTable(std::string table);
