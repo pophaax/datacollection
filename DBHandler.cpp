@@ -282,7 +282,6 @@ std::string DBHandler::getLogs() {
 	} catch(const char * error) {
 		m_logger.error(error);
 	}
-	std::cout << json.dump() << std::endl;
 	return json.dump();
 }
 
