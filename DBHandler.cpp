@@ -65,11 +65,17 @@ void DBHandler::insertDataLog(
 	int waypoint_id,
 	double true_wind_direction_calc) {
 
+	std::stringstream pressuresensorValues;
 	std::stringstream gpsValues;
 	std::stringstream courseCalculationValues;
 	std::stringstream compassModelValues;
 	std::stringstream systemValues;
 	std::stringstream windsensorValues;
+
+
+	pressuresensorValues << std::setprecision(10) << "'"
+		<< systemState.pressure << "'";
+
 
 	gpsValues << std::setprecision(10) << "'"
 		<< systemState.gpsModel.timestamp << "', "
@@ -97,6 +103,7 @@ void DBHandler::insertDataLog(
 		<< systemState.windsensorModel.temperature;
 
 	printf("GPS GMT + 3: %s GPS UTC: %s\n",systemState.gpsModel.timestamp.c_str(),systemState.gpsModel.utc_timestamp.c_str());
+	int pressureSensorId = insertLog("pressuresensor_datalogs",pressuresensorValues.str());
 	int windsensorId = insertLog("windsensor_datalogs",windsensorValues.str());
 	int gpsId = insertLog("gps_datalogs",gpsValues.str());
 	int courceCalculationId = insertLog("course_calculation_datalogs",courseCalculationValues.str());
@@ -105,6 +112,7 @@ void DBHandler::insertDataLog(
 	systemValues << std::setprecision(10)
 		<< gpsId << ", "
 		<< courceCalculationId << ", "
+		<< pressureSensorId << ", "
 		<< windsensorId << ", "
 		<< compassModelId << ", "
 		<< systemState.sail << ", "
@@ -252,6 +260,7 @@ std::string DBHandler::getLogs() {
 	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
 	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
 	std::string gpsId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
+	std::string pressuresensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"pressuresensor_id");
 	// Get required fields from datalogs
 
 	Json json;
@@ -267,6 +276,8 @@ std::string DBHandler::getLogs() {
 									"compass_datalogs","compass_datalogs",compassModelId,json);
 		getRowAsJson("direction,speed,temperature",
 								"windsensor_datalogs","windsensor_datalogs",windsensorId,json);
+		getRowAsJson("pressure",
+								"pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json);
 		} catch(const char * error) {
 			m_logger.error(error);
 		}
@@ -355,7 +366,7 @@ void DBHandler::clearDatalogTables() {
 	clearTable("course_calculation_datalogs");
 	clearTable("gps_datalogs");
 	clearTable("windsensor_datalogs");
-
+	clearTable("pressuresensor_datalogs");
 }
 
 
@@ -387,7 +398,7 @@ sqlite3* DBHandler::openDatabase() {
 	}
 
 	// set a 5 second timeout
-	sqlite3_busy_timeout(connection, 5000);
+	//sqlite3_busy_timeout(connection, 5000);
 	return connection;
 }
 
@@ -407,17 +418,18 @@ int DBHandler::insertLog(std::string table, std::string values) {
 	ss << "INSERT INTO " << table << " VALUES(NULL, " << values << ");";
 
 	// std::cout << ss.str() << std::endl;
-
+	sqlite3* db = openDatabase();
 	try {
-		sqlite3* db = openDatabase();
+
 
 		queryTableWithOpenDatabase(ss.str(), db);
 		m_latestDataLogId = sqlite3_last_insert_rowid(db);
 
-		closeDatabase(db);
+
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::insertLog: " << error << std::endl;
+		std::cout << "error in DBHandler::insertLog: " << sqlite3_errmsg(db) << std::endl;
 	}
+	closeDatabase(db);
 	return m_latestDataLogId;
 }
 
@@ -427,7 +439,9 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+		do {
+			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+		} while(resultcode == SQLITE_BUSY);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
@@ -448,7 +462,9 @@ void DBHandler::queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+		do {
+			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
+		} while(resultcode == SQLITE_BUSY);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
@@ -470,7 +486,10 @@ char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &colum
 	if (db != NULL) {
 		int resultcode = 0;
 
-		resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
+		do {
+			resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
+			//usleep(10000);
+		} while(resultcode == SQLITE_BUSY);
 
 		if (m_error != NULL) {
 			std::stringstream errorStream;
