@@ -20,6 +20,7 @@ DBHandler::~DBHandler(void) {
 
 }
 
+
 void DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray) {
 	int rows = 0, columns = 0;
 	std::vector<std::string> values;
@@ -272,21 +273,16 @@ std::string DBHandler::getLogs() {
 	Json json;
 	//create json string
 	try {
-		getRowAsJson("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
-									"system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json,true);
-		getRowAsJson("time,latitude,longitude,speed,heading,satellites_used",
-									"gps_datalogs","gps_datalogs",gpsId,json,true);
-		getRowAsJson("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
-									"course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json,true);
-		getRowAsJson("heading,pitch,roll",
-									"compass_datalogs","compass_datalogs",compassModelId,json,true);
-		getRowAsJson("direction,speed,temperature",
-								"windsensor_datalogs","windsensor_datalogs",windsensorId,json,true);
-		getRowAsJson("pressure",
-								"pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json,true);
-		} catch(const char * error) {
-			m_logger.error(error);
-		}
+		getRowAsJson("*","system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json,true);
+		getRowAsJson("*","gps_datalogs","gps_datalogs",gpsId,json,true);
+		getRowAsJson("*","course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json,true);
+		getRowAsJson("*","compass_datalogs","compass_datalogs",compassModelId,json,true);
+		getRowAsJson("*","windsensor_datalogs","windsensor_datalogs",windsensorId,json,true);
+		getRowAsJson("*","pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json,true);
+	} catch(const char * error) {
+		m_logger.error(error);
+	}
+	std::cout << json.dump() << std::endl;
 	return json.dump();
 }
 
