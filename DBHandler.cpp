@@ -20,7 +20,7 @@ DBHandler::~DBHandler(void) {
 
 }
 
-std::string DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json) {
+void DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray) {
 	int rows = 0, columns = 0;
 	std::vector<std::string> values;
 	std::vector<std::string> columnNames;
@@ -39,18 +39,24 @@ std::string DBHandler::getRowAsJson(std::string select, std::string table, std::
 			values.push_back(results[i]);
 	}
 
-	if(values.size() != columnNames.size()) return "";
+	if(values.size() != columnNames.size()) {
+		std::cout << "error in DBHandler::getRowAsJson: values and columns are different sizes" << std::endl;
+		return;
+	};
 
 	Json jsonEntry;
 
 	for(auto i = 0; i < values.size(); i++) {
 		jsonEntry[columnNames.at(i)] = values.at(i);
 	}
-	json[key] = Json::array({jsonEntry});
+	if(useArray) {
+		json[key] = Json::array({jsonEntry});
+	} else {
+		json[key] = jsonEntry;
+	}
 
 	values.clear();
 	columnNames.clear();
-	return json.dump();
 }
 
 void DBHandler::insertDataLog(
@@ -267,17 +273,17 @@ std::string DBHandler::getLogs() {
 	//create json string
 	try {
 		getRowAsJson("id,sail_command_sail_state,rudder_command_rudder_state,sail_servo_position,rudder_servo_position,waypoint_id,true_wind_direction_calc",
-									"system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json);
+									"system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json,true);
 		getRowAsJson("time,latitude,longitude,speed,heading,satellites_used",
-									"gps_datalogs","gps_datalogs",gpsId,json);
+									"gps_datalogs","gps_datalogs",gpsId,json,true);
 		getRowAsJson("distance_to_waypoint,bearing_to_waypoint,course_to_steer,tack,going_starboard",
-									"course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json);
+									"course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json,true);
 		getRowAsJson("heading,pitch,roll",
-									"compass_datalogs","compass_datalogs",compassModelId,json);
+									"compass_datalogs","compass_datalogs",compassModelId,json,true);
 		getRowAsJson("direction,speed,temperature",
-								"windsensor_datalogs","windsensor_datalogs",windsensorId,json);
+								"windsensor_datalogs","windsensor_datalogs",windsensorId,json,true);
 		getRowAsJson("pressure",
-								"pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json);
+								"pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json,true);
 		} catch(const char * error) {
 			m_logger.error(error);
 		}
@@ -347,9 +353,9 @@ std::string DBHandler::getWaypoints() {
 	try {
 		rows = getRows("waypoints");
 		for(auto i = 1; i < rows; ++i) {
-			getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(i),std::to_string(i),json);
+			getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(i),std::to_string(i),json,true);
 		}
-		getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(rows),std::to_string(rows),json);
+		getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(rows),std::to_string(rows),json,true);
 	} catch (const char * error) {
 		m_logger.error("error in DBHandler::getWaypoints()");
 		std::stringstream ss;
@@ -508,7 +514,7 @@ char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &colum
 }
 
 std::vector<std::string> DBHandler::getTableIds(std::string table) {
-		int rows, columns;
+	int rows, columns;
     char** results;
     results = retrieveFromTable("SELECT id FROM " + table + ";", rows, columns);
 
@@ -569,6 +575,23 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 		}
 	}
 
+}
+
+std::string DBHandler::getConfigs() {
+	Json json;
+
+	std::string configTables[] = {"course_calculation_config" , "maestro_controller_config",
+					"rudder_command_config", "rudder_servo_config", "sail_command_config" , "sail_servo_config",
+					"sailing_robot_config", "waypoint_routing_config", "wind_vane_config" ,"windsensor_config",
+					"httpsync_config" , "xbee_config"};
+	try {
+		for (auto table : configTables) {
+			getRowAsJson("*",table,table,"1",json,false);
+		}
+	} catch(const char * error) {
+		m_logger.error(error);
+	}
+	return json.dump();
 }
 
 

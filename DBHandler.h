@@ -35,8 +35,9 @@ private:
 	//rows and columns also return values (through a reference) about rows and columns in the result set
 	char** retrieveFromTable(std::string sqlSELECT, int &rows, int &columns);
 
-	//returns table row in Json format, uses table as key
-	std::string getRowAsJson(std::string select, std::string table, std::string key, std::string id,Json& json);
+	//adds a table row into the json object as a array if array flag is true,
+	//otherwise it adds the table row as a json object
+	void getRowAsJson(std::string select, std::string table, std::string key, std::string id,Json& json, bool useArray);
 
 	//gets the id column from a given table
 	std::vector<std::string> getTableIds(std::string table);
@@ -109,6 +110,8 @@ public:
 	void changeOneValue(std::string table, std::string id, std::string newValue, std::string colName);
 
 	std::string getWaypoints();
+
+	std::string getConfigs();
 
 	void clearDatalogTables();
 };
