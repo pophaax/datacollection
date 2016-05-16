@@ -42,6 +42,10 @@ private:
 	//gets the id column from a given table
 	std::vector<std::string> getTableIds(std::string table);
 
+	//gets all datatable names related to "ending" string
+	//used to fetch all tables ending with datalogs or configs
+	std::vector<std::string> getTableNames(std::string like);
+
 	//gets information(for instance: name/datatype) about all columns
 	std::vector<std::string> getColumnInfo(std::string info, std::string table);
 

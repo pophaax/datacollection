@@ -264,6 +264,12 @@ int DBHandler::getRows(std::string table) {
 std::string DBHandler::getLogs() {
 	//Get IDs related to  the current system_datalogs_id
 
+	// std::vector<std::string> tables = getTableNames("%datalogs");
+	//
+	// for (size_t i = 0; i < tables.size(); i++) {
+	// 	std::cout << tables.at(i) << std::endl;
+	// }
+
 	std::string courseCalculationId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
 	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
 	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
@@ -273,6 +279,10 @@ std::string DBHandler::getLogs() {
 
 	Json json;
 	//create json string
+	// std::vector<std::string> ids = getTableIds("system_datalogs");
+	// for (size_t i = 0; i < ids.size(); i++) {
+	// 	std::cout << ids.at(i) << std::endl;
+	// }
 	try {
 		getRowAsJson("*","system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json,true);
 		getRowAsJson("*","gps_datalogs","gps_datalogs",gpsId,json,true);
@@ -289,7 +299,7 @@ std::string DBHandler::getLogs() {
 
 
 void DBHandler::removeLogs(std::string data) {
-	
+
 	Json json = Json::parse(data);
 	for (auto data : json) {
 		std::string table = data["table"];
@@ -538,6 +548,19 @@ std::vector<std::string> DBHandler::getTableIds(std::string table) {
     }
 
     return ids;
+}
+
+std::vector<std::string> DBHandler::getTableNames(std::string like) {
+	int rows, columns;
+    char** results;
+    results = retrieveFromTable("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '"+ like +"';", rows, columns);
+
+    std::vector<std::string> tableNames;
+    for (int i = 1; i <= rows; i++) {
+    	tableNames.push_back(results[i]);
+    }
+
+    return tableNames;
 }
 
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
