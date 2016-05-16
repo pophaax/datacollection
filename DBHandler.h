@@ -52,6 +52,7 @@ private:
 
 	void closeDatabase(sqlite3* connection);
 
+
 public:
 
 	DBHandler(std::string filePath);
@@ -96,7 +97,10 @@ public:
 
 	void removeLogs(std::string lines);
 
-	std::string getMinIdFromTable(std::string table);
+	//get id from table returns either max or min id from table.
+	//max = false -> min id
+	//max = true -> max id
+	std::string getIdFromTable(std::string table, bool max);
 
 	void deleteRow(std::string table, std::string id);
 

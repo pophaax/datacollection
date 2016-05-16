@@ -263,6 +263,7 @@ int DBHandler::getRows(std::string table) {
 
 std::string DBHandler::getLogs() {
 	//Get IDs related to  the current system_datalogs_id
+
 	std::string courseCalculationId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
 	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
 	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
@@ -370,6 +371,28 @@ void DBHandler::clearDatalogTables() {
 	clearTable("pressuresensor_datalogs");
 }
 
+//get id from table returns either max or min id from table.
+//max = false -> min id
+//max = true -> max id
+std::string DBHandler::getIdFromTable(std::string table, bool max) {
+	int rows, columns;
+    char** results;
+	if(max) {
+    	results = retrieveFromTable("SELECT MAX(id) FROM " + table + ";", rows, columns);
+	} else {
+		results = retrieveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
+	}
+    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
+    if (rows * columns < 1) {
+    	return "";
+    }
+    if(results[1] == '\0') {
+    	return "";
+    } else {
+    	return results[1];
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 // private helpers
@@ -419,18 +442,13 @@ int DBHandler::insertLog(std::string table, std::string values) {
 	ss << "INSERT INTO " << table << " VALUES(NULL, " << values << ");";
 
 	// std::cout << ss.str() << std::endl;
-	sqlite3* db = openDatabase();
 	try {
-
-
-		queryTableWithOpenDatabase(ss.str(), db);
-		m_latestDataLogId = sqlite3_last_insert_rowid(db);
-
+		queryTable(ss.str());
+		m_latestDataLogId = atoi(getIdFromTable("system_datalogs",true).c_str());
 
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::insertLog: " << sqlite3_errmsg(db) << std::endl;
+		std::cout << "error in DBHandler::insertLog: " << error << std::endl;
 	}
-	closeDatabase(db);
 	return m_latestDataLogId;
 }
 
@@ -594,19 +612,4 @@ void DBHandler::changeOneValue(std::string table, std::string id,std::string new
 
 	queryTable("UPDATE " + table + " SET "+ colName + " = "+ newValue +" WHERE id = " + id +";");
 
-}
-
-std::string DBHandler::getMinIdFromTable(std::string table) {
-	int rows, columns;
-    char** results;
-    results = retrieveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
-    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
-    if (rows * columns < 1) {
-    	return "";
-    }
-    if(results[1] == '\0') {
-    	return "";
-    } else {
-    	return results[1];
-    }
 }
