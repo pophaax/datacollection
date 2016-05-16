@@ -440,16 +440,16 @@ void DBHandler::closeDatabase(sqlite3* connection) {
 int DBHandler::insertLog(std::string table, std::string values) {
 	std::stringstream ss;
 	ss << "INSERT INTO " << table << " VALUES(NULL, " << values << ");";
-
+	int lastInsertedId = 0;
 	// std::cout << ss.str() << std::endl;
 	try {
 		queryTable(ss.str());
-		m_latestDataLogId = atoi(getIdFromTable("system_datalogs",true).c_str());
+		lastInsertedId = atoi(getIdFromTable(table,true).c_str());
 
 	} catch(const char * error) {
 		std::cout << "error in DBHandler::insertLog: " << error << std::endl;
 	}
-	return m_latestDataLogId;
+	return lastInsertedId;
 }
 
 void DBHandler::queryTable(std::string sqlINSERT) {
