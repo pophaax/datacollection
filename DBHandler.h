@@ -95,7 +95,7 @@ public:
 	// returns first row in datalogs as JSON
 	std::string getLogs();
 
-	void removeLogs(std::string lines);
+	void removeLogs(std::string data);
 
 	//get id from table returns either max or min id from table.
 	//max = false -> min id

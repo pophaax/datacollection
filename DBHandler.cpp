@@ -288,13 +288,14 @@ std::string DBHandler::getLogs() {
 
 
 
-void DBHandler::removeLogs(std::string lines) {
-	// JSONDecode decoder;
-	// decoder.addJSON(lines);
-	// while (decoder.hasNext()) {
-	// 	// std::cout << "tab: " << decoder.getData("tab") << ", id: " << decoder.getData("id_system") << "\n";
-	// 	queryTable("DELETE FROM system_datalogs WHERE id = " + decoder.getData("id_system") + ";");
-	// }
+void DBHandler::removeLogs(std::string data) {
+	
+	Json json = Json::parse(data);
+	for (auto data : json) {
+		std::string table = data["table"];
+		std::string id = data["id"];
+		queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
+	}
 }
 
 
