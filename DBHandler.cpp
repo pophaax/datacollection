@@ -235,7 +235,6 @@ void DBHandler::updateConfigs(std::string configs) {
 	for (auto table : tables) {
 		updateTableJson(table,json[table].dump());
 	}
-
 }
 
 
@@ -617,10 +616,8 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 std::string DBHandler::getConfigs() {
 	Json json;
 
-	std::string configTables[] = {"course_calculation_config" , "maestro_controller_config",
-					"rudder_command_config", "rudder_servo_config", "sail_command_config" , "sail_servo_config",
-					"sailing_robot_config", "waypoint_routing_config", "wind_vane_config" ,"windsensor_config",
-					"httpsync_config" , "xbee_config"};
+	std::vector<std::string> configTables = getTableNames("%_config");
+
 	try {
 		for (auto table : configTables) {
 			getRowAsJson("*",table,table,"1",json,false);
