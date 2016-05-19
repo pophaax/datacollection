@@ -80,8 +80,11 @@ void DBHandler::insertDataLog(
 	std::stringstream windsensorValues;
 
 
-	arduinoValues << std::setprecision(10) << "'"
-		<< systemState.pressure << "'";
+	arduinoValues << std::setprecision(10)
+		<< systemState.arduinoModel.analogValue0 << ", "
+		<< systemState.arduinoModel.analogValue1 << ", "
+		<< systemState.arduinoModel.analogValue2 << ", "
+		<< systemState.arduinoModel.analogValue3;
 
 
 	gpsValues << std::setprecision(10) << "'"
