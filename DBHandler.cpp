@@ -72,7 +72,7 @@ void DBHandler::insertDataLog(
 	int waypoint_id,
 	double true_wind_direction_calc) {
 
-	std::stringstream pressuresensorValues;
+	std::stringstream arduinoValues;
 	std::stringstream gpsValues;
 	std::stringstream courseCalculationValues;
 	std::stringstream compassModelValues;
@@ -80,7 +80,7 @@ void DBHandler::insertDataLog(
 	std::stringstream windsensorValues;
 
 
-	pressuresensorValues << std::setprecision(10) << "'"
+	arduinoValues << std::setprecision(10) << "'"
 		<< systemState.pressure << "'";
 
 
@@ -110,7 +110,7 @@ void DBHandler::insertDataLog(
 		<< systemState.windsensorModel.temperature;
 
 	printf("GPS GMT + 3: %s GPS UTC: %s\n",systemState.gpsModel.timestamp.c_str(),systemState.gpsModel.utc_timestamp.c_str());
-	int pressureSensorId = insertLog("pressuresensor_datalogs",pressuresensorValues.str());
+	int arduinoId = insertLog("arduino_datalogs",arduinoValues.str());
 	int windsensorId = insertLog("windsensor_datalogs",windsensorValues.str());
 	int gpsId = insertLog("gps_datalogs",gpsValues.str());
 	int courceCalculationId = insertLog("course_calculation_datalogs",courseCalculationValues.str());
@@ -119,7 +119,7 @@ void DBHandler::insertDataLog(
 	systemValues << std::setprecision(10)
 		<< gpsId << ", "
 		<< courceCalculationId << ", "
-		<< pressureSensorId << ", "
+		<< arduinoId << ", "
 		<< windsensorId << ", "
 		<< compassModelId << ", "
 		<< systemState.sail << ", "
@@ -273,7 +273,7 @@ std::string DBHandler::getLogs() {
 	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
 	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
 	std::string gpsId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
-	std::string pressuresensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"pressuresensor_id");
+	std::string arduinoId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"arduino_id");
 	// Get required fields from datalogs
 
 	Json json;
@@ -288,7 +288,7 @@ std::string DBHandler::getLogs() {
 		getRowAsJson("*","course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json,true);
 		getRowAsJson("*","compass_datalogs","compass_datalogs",compassModelId,json,true);
 		getRowAsJson("*","windsensor_datalogs","windsensor_datalogs",windsensorId,json,true);
-		getRowAsJson("*","pressuresensor_datalogs","pressuresensor_datalogs",pressuresensorId,json,true);
+		getRowAsJson("*","arduino_datalogs","arduino_datalogs",arduinoId,json,true);
 	} catch(const char * error) {
 		m_logger.error(error);
 	}
@@ -373,12 +373,12 @@ std::string DBHandler::getWaypoints() {
 }
 
 void DBHandler::clearDatalogTables() {
-	clearTable("system_datalogs");
-	clearTable("compass_datalogs");
-	clearTable("course_calculation_datalogs");
-	clearTable("gps_datalogs");
-	clearTable("windsensor_datalogs");
-	clearTable("pressuresensor_datalogs");
+	// clearTable("system_datalogs");
+	// clearTable("compass_datalogs");
+	// clearTable("course_calculation_datalogs");
+	// clearTable("gps_datalogs");
+	// clearTable("windsensor_datalogs");
+	// clearTable("pressuresensor_datalogs");
 }
 
 //get id from table returns either max or min id from table.
@@ -476,7 +476,7 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 			std::stringstream errorStream;
 			errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(db);
 			sqlite3_free(m_error);
-
+			m_logger.error(errorStream.str());
 			throw errorStream.str().c_str();
 		}
 	}
