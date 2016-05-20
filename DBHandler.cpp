@@ -66,76 +66,78 @@ void DBHandler::getRowAsJson(std::string select, std::string table, std::string 
 
 void DBHandler::insertDataLog(
 	SystemStateModel systemState,
-	int sail_servo_position,
-	int rudder_servo_position,
-	double course_calculation_distance_to_waypoint,
-	double course_calculation_bearing_to_waypoint,
-	double course_calculation_course_to_steer,
-	bool course_calculation_tack,
-	bool course_calculation_going_starboard,
-	int waypoint_id,
-	double true_wind_direction_calc) {
+	int sailServoPosition,
+	int rudderServoPosition,
+	double courseCalculationDistanceToWaypoint,
+	double courseCalculationBearingToWaypoint,
+	double courseCalculationCourseToSteer,
+	bool courseCalculationTack,
+	bool courseCalculationGoingStarboard,
+	int waypointId,
+	double trueWindDirectionCalc,
+	bool routeStarted) {
 
-	std::stringstream arduinoValues;
-	std::stringstream gpsValues;
-	std::stringstream courseCalculationValues;
-	std::stringstream compassModelValues;
-	std::stringstream systemValues;
-	std::stringstream windsensorValues;
-
-
-	arduinoValues << std::setprecision(10)
-		<< systemState.arduinoModel.analogValue0 << ", "
-		<< systemState.arduinoModel.analogValue1 << ", "
-		<< systemState.arduinoModel.analogValue2 << ", "
-		<< systemState.arduinoModel.analogValue3;
+		std::stringstream arduinoValues;
+		std::stringstream gpsValues;
+		std::stringstream courseCalculationValues;
+		std::stringstream compassModelValues;
+		std::stringstream systemValues;
+		std::stringstream windsensorValues;
 
 
-	gpsValues << std::setprecision(10) << "'"
-		<< systemState.gpsModel.timestamp << "', "
-		<< systemState.gpsModel.positionModel.latitude << ", "
-		<< systemState.gpsModel.positionModel.longitude << ", "
-		<< systemState.gpsModel.speed << ", "
-		<< systemState.gpsModel.heading << ", "
-		<< systemState.gpsModel.satellitesUsed;
+		arduinoValues << std::setprecision(10)
+			<< systemState.arduinoModel.analogValue0 << ", "
+			<< systemState.arduinoModel.analogValue1 << ", "
+			<< systemState.arduinoModel.analogValue2 << ", "
+			<< systemState.arduinoModel.analogValue3;
 
-	courseCalculationValues << std::setprecision(10)
-		<< course_calculation_distance_to_waypoint << ", "
-		<< course_calculation_bearing_to_waypoint << ", "
-		<< course_calculation_course_to_steer << ", "
-		<< course_calculation_tack << ", "
-		<< course_calculation_going_starboard;
 
-	compassModelValues << std::setprecision(10)
-		<< systemState.compassModel.heading << ", "
-		<< systemState.compassModel.pitch << ", "
-		<< systemState.compassModel.roll;
+		gpsValues << std::setprecision(10) << "'"
+			<< systemState.gpsModel.timestamp << "', "
+			<< systemState.gpsModel.positionModel.latitude << ", "
+			<< systemState.gpsModel.positionModel.longitude << ", "
+			<< systemState.gpsModel.speed << ", "
+			<< systemState.gpsModel.heading << ", "
+			<< systemState.gpsModel.satellitesUsed << ", "
+			<< routeStarted;
 
-	windsensorValues << std::setprecision(10)
-		<< systemState.windsensorModel.direction << ", "
-		<< systemState.windsensorModel.speed << ", "
-		<< systemState.windsensorModel.temperature;
+		courseCalculationValues << std::setprecision(10)
+			<< courseCalculationDistanceToWaypoint << ", "
+			<< courseCalculationBearingToWaypoint << ", "
+			<< courseCalculationCourseToSteer << ", "
+			<< courseCalculationTack << ", "
+			<< courseCalculationGoingStarboard;
 
-	printf("GPS GMT + 3: %s GPS UTC: %s\n",systemState.gpsModel.timestamp.c_str(),systemState.gpsModel.utc_timestamp.c_str());
-	int arduinoId = insertLog("arduino_datalogs",arduinoValues.str());
-	int windsensorId = insertLog("windsensor_datalogs",windsensorValues.str());
-	int gpsId = insertLog("gps_datalogs",gpsValues.str());
-	int courceCalculationId = insertLog("course_calculation_datalogs",courseCalculationValues.str());
-	int compassModelId = insertLog("compass_datalogs",compassModelValues.str());
+		compassModelValues << std::setprecision(10)
+			<< systemState.compassModel.heading << ", "
+			<< systemState.compassModel.pitch << ", "
+			<< systemState.compassModel.roll;
 
-	systemValues << std::setprecision(10)
-		<< gpsId << ", "
-		<< courceCalculationId << ", "
-		<< arduinoId << ", "
-		<< windsensorId << ", "
-		<< compassModelId << ", "
-		<< systemState.sail << ", "
-		<< systemState.rudder << ", "
-		<< sail_servo_position << ", "
-		<< rudder_servo_position << ", "
-		<< waypoint_id << ", "
-		<< true_wind_direction_calc;
-	m_latestDataLogId = insertLog("system_datalogs", systemValues.str());
+		windsensorValues << std::setprecision(10)
+			<< systemState.windsensorModel.direction << ", "
+			<< systemState.windsensorModel.speed << ", "
+			<< systemState.windsensorModel.temperature;
+
+		printf("GPS GMT + 3: %s GPS UTC: %s\n",systemState.gpsModel.timestamp.c_str(),systemState.gpsModel.utc_timestamp.c_str());
+		int arduinoId = insertLog("arduino_datalogs",arduinoValues.str());
+		int windsensorId = insertLog("windsensor_datalogs",windsensorValues.str());
+		int gpsId = insertLog("gps_datalogs",gpsValues.str());
+		int courceCalculationId = insertLog("course_calculation_datalogs",courseCalculationValues.str());
+		int compassModelId = insertLog("compass_datalogs",compassModelValues.str());
+
+		systemValues << std::setprecision(10)
+			<< gpsId << ", "
+			<< courceCalculationId << ", "
+			<< arduinoId << ", "
+			<< windsensorId << ", "
+			<< compassModelId << ", "
+			<< systemState.sail << ", "
+			<< systemState.rudder << ", "
+			<< sailServoPosition << ", "
+			<< rudderServoPosition << ", "
+			<< waypointId << ", "
+			<< trueWindDirectionCalc;
+		m_latestDataLogId = insertLog("system_datalogs", systemValues.str());
 }
 
 void DBHandler::insertMessageLog(std::string gps_time, std::string type, std::string msg) {
@@ -375,7 +377,7 @@ std::string DBHandler::getIdFromTable(std::string table, bool max) {
 sqlite3* DBHandler::openDatabase() {
 	sqlite3* connection;
 	int resultcode = 0;
-	
+
 	// check if file exists
 	FILE* db_file = fopen(m_filePath.c_str(), "r");
 	if (!db_file) {
@@ -432,7 +434,7 @@ int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* 
 		}
 
 		results->emplace_back( (char*) sqlite3_column_name(statement, i) );
-	} 
+	}
 
 	// read the rest of the table
 	while( (resultcode = sqlite3_step(statement)) == SQLITE_ROW ) {
@@ -449,8 +451,8 @@ int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* 
 		}
 		rows++;
 	}
-	
-	sqlite3_finalize(statement); 
+
+	sqlite3_finalize(statement);
 	return SQLITE_OK;
 }
 
@@ -506,7 +508,7 @@ std::vector<std::string> DBHandler::retrieveFromTable(std::string sqlSELECT, int
 			//resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
 			resultcode = getTable(db, sqlSELECT.c_str(), &results, rows, columns);
 		} while(resultcode == SQLITE_BUSY);
-		
+
 		if(resultcode == SQLITE_EMPTY) {
 			std::vector<std::string> s;
 			return s;

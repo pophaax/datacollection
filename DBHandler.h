@@ -51,7 +51,7 @@ private:
 
 	// own implementation of deprecated sqlite3_get_table()
 	int getTable(sqlite3* db, const char* sql, std::vector<std::string>* results, int &rows, int &columns);
-	
+
 	sqlite3* openDatabase();
 
 	void closeDatabase(sqlite3* connection);
@@ -66,15 +66,16 @@ public:
 
 	void insertDataLog(
 		SystemStateModel systemState,
-		int sail_servo_position,
-		int rudder_servo_position,
-		double course_calculation_distance_to_waypoint,
-		double course_calculation_bearing_to_waypoint,
-		double course_calculation_course_to_steer,
-		bool course_calculation_tack,
-		bool course_calculation_going_starboard,
-		int waypoint_id,
-		double true_wind_direction_calc);
+		int sailServoPosition,
+		int rudderServoPosition,
+		double courseCalculationDistanceToWaypoint,
+		double courseCalculationBearingToWaypoint,
+		double courseCalculationCourseToSteer,
+		bool courseCalculationTack,
+		bool courseCalculationGoingStarboard,
+		int waypointId,
+		double trueWindDirectionCalc,
+		bool routeStarted);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
 
