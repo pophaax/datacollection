@@ -28,32 +28,36 @@ void DBHandler::getRowAsJson(std::string select, std::string table, std::string 
 	char** results;
 
 	try {
-		results = retrieveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
+		if(id == "")
+			results = retrieveFromTable("SELECT " + select + " FROM " + table + ";", rows, columns);
+		else
+			results = retrieveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
 		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
 	}
 
-	for(int i = 0; i < columns*2; ++i) {
+	for(int i = 0; i < columns*(rows+1); ++i) {
 		if(i < columns)
 			columnNames.push_back(results[i]);
 		else
 			values.push_back(results[i]);
 	}
 
-	if(values.size() != columnNames.size()) {
-		std::cout << "error in DBHandler::getRowAsJson: values and columns are different sizes" << std::endl;
-		return;
-	};
-
 	Json jsonEntry;
+	for (auto i = 0; i < rows; i++) {
+		for(auto j = 0; j < columnNames.size(); j++) {
+			int index = j+(columns*i);
+			jsonEntry[columnNames.at(j)] = values.at(index);
+		}
+			if(useArray) {
+				if(!json[key].is_array()) {
+					json[key] = Json::array({});
+				}
+				json[key].push_back(jsonEntry);
+			} else {
+				json[key] = jsonEntry;
+			}
 
-	for(auto i = 0; i < values.size(); i++) {
-		jsonEntry[columnNames.at(i)] = values.at(i);
-	}
-	if(useArray) {
-		json[key] = Json::array({jsonEntry});
-	} else {
-		json[key] = jsonEntry;
 	}
 
 	values.clear();
@@ -144,31 +148,8 @@ void DBHandler::insertMessageLog(std::string gps_time, std::string type, std::st
 }
 
 
-
-bool DBHandler::revChanged(std::string toCheck, std::string serverRevs) {
-	JSONDecode decoder;
-	decoder.addJSON(serverRevs);
-	std::string serverConfig, localConfig;
-	if (decoder.hasNext()) {
-		serverConfig = decoder.getData(toCheck);
-	} else {
-		throw ("DBHandler::revChanged(), coudn't find "+ toCheck + "in JSONdata.").c_str();
-	}
-	if (getTableIds("state").size() == 0) {
-		return true;
-	} else {
-		localConfig = retrieveCell("state", "1", toCheck);
-	}
-
-	if ( serverConfig.compare(localConfig) != 0 ) {
-		return true;
-	}
-	return false;
-}
-
-
 void DBHandler::updateTableJson(std::string table, std::string data) {
-	// std::cout << table << std::endl;
+
 	std::vector<std::string> columns = getColumnInfo("name", table);
 	if(columns.size() <= 0 ) throw "ERROR in DBHandler::updateTable no such table " + table;
 	Json json = Json::parse(data);
@@ -264,43 +245,32 @@ int DBHandler::getRows(std::string table) {
 }
 
 std::string DBHandler::getLogs() {
-	//Get IDs related to  the current system_datalogs_id
-
-	// std::vector<std::string> tables = getTableNames("%datalogs");
-	//
-	// for (size_t i = 0; i < tables.size(); i++) {
-	// 	std::cout << tables.at(i) << std::endl;
-	// }
-
-	std::string courseCalculationId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"course_calculation_id");
-	std::string windsensorId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"windsensor_id");
-	std::string compassModelId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"compass_id");
-	std::string gpsId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"gps_id");
-	std::string arduinoId = retrieveCell("system_datalogs",std::to_string(m_latestDataLogId),"arduino_id");
-	// Get required fields from datalogs
-
 	Json json;
-	//create json string
-	// std::vector<std::string> ids = getTableIds("system_datalogs");
-	// for (size_t i = 0; i < ids.size(); i++) {
-	// 	std::cout << ids.at(i) << std::endl;
-	// }
+
+	//fetch all datatables ending with "_datalogs"
+	std::vector<std::string> datalogTables = getTableNames("%_datalogs");
+
 	try {
-		getRowAsJson("*","system_datalogs","system_datalogs",std::to_string(m_latestDataLogId),json,true);
-		getRowAsJson("*","gps_datalogs","gps_datalogs",gpsId,json,true);
-		getRowAsJson("*","course_calculation_datalogs", "course_calculation_datalogs",courseCalculationId,json,true);
-		getRowAsJson("*","compass_datalogs","compass_datalogs",compassModelId,json,true);
-		getRowAsJson("*","windsensor_datalogs","windsensor_datalogs",windsensorId,json,true);
-		getRowAsJson("*","arduino_datalogs","arduino_datalogs",arduinoId,json,true);
+		//insert all data in these tables as json array
+		for (auto table : datalogTables) {
+			getRowAsJson("*",table,table,"",json,true);
+		}
+
 	} catch(const char * error) {
-		m_logger.error(error);
+		m_logger.error("Error DBHandler::getLogs : " + std::string(error));
 	}
+
 	return json.dump();
 }
 
 
 
 void DBHandler::removeLogs(std::string data) {
+
+	if(data == "") {
+		m_logger.error("Error in DBHandler::removeLogs : response empty");
+		return;
+	}
 
 	Json json = Json::parse(data);
 	for (auto data : json) {
@@ -373,15 +343,6 @@ std::string DBHandler::getWaypoints() {
 	}
 
 	return json.dump();
-}
-
-void DBHandler::clearDatalogTables() {
-	// clearTable("system_datalogs");
-	// clearTable("compass_datalogs");
-	// clearTable("course_calculation_datalogs");
-	// clearTable("gps_datalogs");
-	// clearTable("windsensor_datalogs");
-	// clearTable("pressuresensor_datalogs");
 }
 
 //get id from table returns either max or min id from table.
@@ -619,14 +580,17 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 std::string DBHandler::getConfigs() {
 	Json json;
 
+	//Fetch all table names ending with "_config"
 	std::vector<std::string> configTables = getTableNames("%_config");
 
 	try {
+		//Query config tables and select all from config tables with id "1"
+		//This json structure does not use arrays
 		for (auto table : configTables) {
 			getRowAsJson("*",table,table,"1",json,false);
 		}
 	} catch(const char * error) {
-		m_logger.error(error);
+		m_logger.error("Error in DBHandler::getConfigs : " + std::string(error));
 	}
 	return json.dump();
 }

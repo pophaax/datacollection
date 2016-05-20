@@ -37,13 +37,14 @@ private:
 
 	//adds a table row into the json object as a array if array flag is true,
 	//otherwise it adds the table row as a json object
-	void getRowAsJson(std::string select, std::string table, std::string key, std::string id,Json& json, bool useArray);
+	//id field is not obligatory, can be left empty
+	void getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray);
 
 	//gets the id column from a given table
 	std::vector<std::string> getTableIds(std::string table);
 
 	//gets all datatable names related to "ending" string
-	//used to fetch all tables ending with datalogs or configs
+	//used to fetch all tables ending with _datalogs or _config
 	std::vector<std::string> getTableNames(std::string like);
 
 	//gets information(for instance: name/datatype) about all columns
@@ -77,8 +78,6 @@ public:
 		double true_wind_direction_calc);
 
 	void insertMessageLog(std::string gps_time, std::string type, std::string msg);
-
-	bool revChanged(std::string toCheck, std::string serverRevs);
 
 	//updates table with json string (data)
 	void updateTableJson(std::string table, std::string data);
@@ -121,7 +120,6 @@ public:
 
 	std::string getConfigs();
 
-	void clearDatalogTables();
 };
 
 #endif
