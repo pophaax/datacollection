@@ -19,7 +19,7 @@ class DBHandler {
 
 private:
 
-	char *m_error;
+	char* m_error;
 	int m_latestDataLogId;
 	Logger m_logger;
 	std::string m_filePath;
@@ -27,13 +27,9 @@ private:
 	//execute INSERT query and add new row into table
 	void queryTable(std::string sqlINSERT);
 
-	// same as above but will neither open nor close the database
-	// use with caution
-	void queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db);
-
 	//retrieve data from given table/tables, return value is a C 2D char array
 	//rows and columns also return values (through a reference) about rows and columns in the result set
-	char** retrieveFromTable(std::string sqlSELECT, int &rows, int &columns);
+	std::vector<std::string> retrieveFromTable(std::string sqlSELECT, int &rows, int &columns);
 
 	//adds a table row into the json object as a array if array flag is true,
 	//otherwise it adds the table row as a json object
@@ -53,6 +49,9 @@ private:
 	//help function used in insertDataLog
 	int insertLog(std::string table, std::string values);
 
+	// own implementation of deprecated sqlite3_get_table()
+	int getTable(sqlite3* db, const char* sql, std::vector<std::string>* results, int &rows, int &columns);
+	
 	sqlite3* openDatabase();
 
 	void closeDatabase(sqlite3* connection);

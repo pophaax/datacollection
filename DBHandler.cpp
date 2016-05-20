@@ -25,7 +25,7 @@ void DBHandler::getRowAsJson(std::string select, std::string table, std::string 
 	int rows = 0, columns = 0;
 	std::vector<std::string> values;
 	std::vector<std::string> columnNames;
-	char** results;
+	std::vector<std::string> results;
 
 	try {
 		if(id == "")
@@ -190,7 +190,7 @@ std::string DBHandler::retrieveCell(std::string table, std::string id, std::stri
 	std::string query = "SELECT " + column + " FROM " + table +" WHERE id=" + id + ";";
 
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
     results = retrieveFromTable(query, rows, columns);
 
     if (columns < 1) {
@@ -350,7 +350,7 @@ std::string DBHandler::getWaypoints() {
 //max = true -> max id
 std::string DBHandler::getIdFromTable(std::string table, bool max) {
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
 	if(max) {
     	results = retrieveFromTable("SELECT MAX(id) FROM " + table + ";", rows, columns);
 	} else {
@@ -360,7 +360,7 @@ std::string DBHandler::getIdFromTable(std::string table, bool max) {
     if (rows * columns < 1) {
     	return "";
     }
-    if(results[1] == '\0') {
+    if(results[1] == "\0") {
     	return "";
     } else {
     	return results[1];
@@ -375,6 +375,7 @@ std::string DBHandler::getIdFromTable(std::string table, bool max) {
 sqlite3* DBHandler::openDatabase() {
 	sqlite3* connection;
 	int resultcode = 0;
+	
 	// check if file exists
 	FILE* db_file = fopen(m_filePath.c_str(), "r");
 	if (!db_file) {
@@ -395,8 +396,8 @@ sqlite3* DBHandler::openDatabase() {
 		throw errorStream.str().c_str();
 	}
 
-	// set a 5 second timeout
-	//sqlite3_busy_timeout(connection, 5000);
+	// set a .5 second timeout
+	sqlite3_busy_timeout(connection, 500);
 	return connection;
 }
 
@@ -410,6 +411,49 @@ void DBHandler::closeDatabase(sqlite3* connection) {
 		throw "DBHandler::closeDatabase() : connection is already null";
 	}
 }
+
+int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* results, int &rows, int &columns) {
+	int resultcode = -1;
+	sqlite3_stmt* statement = NULL;
+
+	if((resultcode = sqlite3_prepare_v2(db, sql, strlen(sql), &statement, NULL)) != SQLITE_OK) {
+		sqlite3_finalize(statement);
+		return resultcode;
+	}
+
+	columns = sqlite3_column_count(statement);
+	rows = 0;
+
+	// read column names
+	for(int i=0; i<columns; i++) {
+		if(!sqlite3_column_name(statement, i)) {
+			sqlite3_finalize(statement);
+			return SQLITE_EMPTY;
+		}
+
+		results->emplace_back( (char*) sqlite3_column_name(statement, i) );
+	} 
+
+	// read the rest of the table
+	while( (resultcode = sqlite3_step(statement)) == SQLITE_ROW ) {
+
+		for(int i=0; i<columns; i++) {
+			if(!sqlite3_column_text(statement, i)) {
+				sqlite3_finalize(statement);
+				rows = 0;
+				columns = 0;
+				return SQLITE_EMPTY;
+			}
+
+			results->emplace_back( (char*) sqlite3_column_text(statement, i) );
+		}
+		rows++;
+	}
+	
+	sqlite3_finalize(statement); 
+	return SQLITE_OK;
+}
+
 
 int DBHandler::insertLog(std::string table, std::string values) {
 	std::stringstream ss;
@@ -432,7 +476,7 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		do {
+		do {http://www.sailingrobots.com/testdata/sync/
 			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 		} while(resultcode == SQLITE_BUSY);
 
@@ -451,43 +495,26 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	closeDatabase(db);
 }
 
-void DBHandler::queryTableWithOpenDatabase(std::string sqlINSERT, sqlite3* db) {
-	if (db != NULL) {
-		int resultcode = 0;
-
-		do {
-			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
-		} while(resultcode == SQLITE_BUSY);
-
-		if (m_error != NULL) {
-			std::stringstream errorStream;
-			errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(db);
-			sqlite3_free(m_error);
-
-			throw errorStream.str().c_str();
-		}
-	}
-	else {
-		throw "DBHandler::queryTable(), no db connection";
-	}
-}
-
-char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &columns) {
+std::vector<std::string> DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &columns) {
 	sqlite3* db = openDatabase();
-	char **results = NULL;
+	std::vector<std::string> results;
 
 	if (db != NULL) {
 		int resultcode = 0;
 
 		do {
-			resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
-			//usleep(10000);
+			//resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
+			resultcode = getTable(db, sqlSELECT.c_str(), &results, rows, columns);
 		} while(resultcode == SQLITE_BUSY);
+		
+		if(resultcode == SQLITE_EMPTY) {
+			std::vector<std::string> s;
+			return s;
+		}
 
-		if (m_error != NULL) {
+		if (resultcode != SQLITE_OK) {
 			std::stringstream errorStream;
-			errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errmsg(db);
-			sqlite3_free(m_error);
+			errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errstr(resultcode);
 			std::cout << errorStream.str().c_str() << std::endl;
 			throw errorStream.str().c_str();
 		}
@@ -502,7 +529,7 @@ char** DBHandler::retrieveFromTable(std::string sqlSELECT, int &rows, int &colum
 
 std::vector<std::string> DBHandler::getTableIds(std::string table) {
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
     results = retrieveFromTable("SELECT id FROM " + table + ";", rows, columns);
 
     std::vector<std::string> ids;
@@ -515,7 +542,7 @@ std::vector<std::string> DBHandler::getTableIds(std::string table) {
 
 std::vector<std::string> DBHandler::getTableNames(std::string like) {
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
     results = retrieveFromTable("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '"+ like +"';", rows, columns);
 
     std::vector<std::string> tableNames;
@@ -528,7 +555,7 @@ std::vector<std::string> DBHandler::getTableNames(std::string like) {
 
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
     results = retrieveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
     std::vector<std::string> types;
     int infoIndex = 0;
@@ -547,10 +574,10 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
 void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	int rows, columns;
-    char** results;
+    std::vector<std::string> results;
     results = retrieveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
     //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
-    if (rows * columns < 1 || results[1] == '\0') {
+    if (rows * columns < 1 || results[1] == "\0") {
     	waypointModel.id = "";
     }
     else {
@@ -567,7 +594,7 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 		results = retrieveFromTable("SELECT time FROM waypoint_stationary WHERE id = " +
 			waypointModel.id + ";", rows, columns);
 
-		if (rows * columns < 1 || results[1] == '\0') {
+		if (rows * columns < 1 || results[1] == "\0") {
 			waypointModel.time = 0;
 		}
 		else {
