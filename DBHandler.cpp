@@ -453,6 +453,10 @@ int DBHandler::getTable(sqlite3* db, const std::string &sql, std::vector<std::st
 	}
 
 	sqlite3_finalize(statement);
+
+	if(resultcode != SQLITE_OK)
+		return resultcode;
+
 	return SQLITE_OK;
 }
 
