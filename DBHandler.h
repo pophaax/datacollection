@@ -50,7 +50,7 @@ private:
 	int insertLog(std::string table, std::string values);
 
 	// own implementation of deprecated sqlite3_get_table()
-	int getTable(sqlite3* db, const char* sql, std::vector<std::string>* results, int &rows, int &columns);
+	int getTable(sqlite3* db, const std::string &sql, std::vector<std::string> &results, int &rows, int &columns);
 
 	sqlite3* openDatabase();
 

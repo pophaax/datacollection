@@ -398,8 +398,8 @@ sqlite3* DBHandler::openDatabase() {
 		throw errorStream.str().c_str();
 	}
 
-	// set a .5 second timeout
-	sqlite3_busy_timeout(connection, 500);
+	// set a 10 millisecond timeout
+	sqlite3_busy_timeout(connection, 10);
 	return connection;
 }
 
@@ -414,11 +414,11 @@ void DBHandler::closeDatabase(sqlite3* connection) {
 	}
 }
 
-int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* results, int &rows, int &columns) {
+int DBHandler::getTable(sqlite3* db, const std::string &sql, std::vector<std::string> &results, int &rows, int &columns) {
 	int resultcode = -1;
 	sqlite3_stmt* statement = NULL;
 
-	if((resultcode = sqlite3_prepare_v2(db, sql, strlen(sql), &statement, NULL)) != SQLITE_OK) {
+	if((resultcode = sqlite3_prepare_v2(db, sql.c_str(), sql.size(), &statement, NULL)) != SQLITE_OK) {
 		sqlite3_finalize(statement);
 		return resultcode;
 	}
@@ -433,7 +433,7 @@ int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* 
 			return SQLITE_EMPTY;
 		}
 
-		results->emplace_back( (char*) sqlite3_column_name(statement, i) );
+		results.emplace_back( const_cast<char*>(sqlite3_column_name(statement, i)) );
 	}
 
 	// read the rest of the table
@@ -447,7 +447,7 @@ int DBHandler::getTable(sqlite3* db, const char* sql, std::vector<std::string>* 
 				return SQLITE_EMPTY;
 			}
 
-			results->emplace_back( (char*) sqlite3_column_text(statement, i) );
+			results.emplace_back( reinterpret_cast<char*>(const_cast<unsigned char*>(sqlite3_column_text(statement, i))) );
 		}
 		rows++;
 	}
@@ -506,7 +506,7 @@ std::vector<std::string> DBHandler::retrieveFromTable(std::string sqlSELECT, int
 
 		do {
 			//resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
-			resultcode = getTable(db, sqlSELECT.c_str(), &results, rows, columns);
+			resultcode = getTable(db, sqlSELECT, results, rows, columns);
 		} while(resultcode == SQLITE_BUSY);
 
 		if(resultcode == SQLITE_EMPTY) {
