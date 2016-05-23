@@ -34,6 +34,7 @@ void DBHandler::getRowAsJson(std::string select, std::string table, std::string 
 			results = retrieveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
 		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
+		m_logger.error("errors in dbhandler::getrowasjson : " + select + " table : " + table);
 	}
 
 	for(int i = 0; i < columns*(rows+1); ++i) {
@@ -282,6 +283,14 @@ void DBHandler::removeLogs(std::string data) {
 	}
 }
 
+void DBHandler::clearLogs() {
+	std::vector<std::string> datalogTables = getTableNames("%_datalogs");
+
+	for (auto table : datalogTables) {
+		clearTable(table);
+	}
+}
+
 
 void DBHandler::deleteRow(std::string table, std::string id) {
 	queryTable("DELETE FROM " + table + " WHERE id = " + id + ";");
@@ -454,9 +463,9 @@ int DBHandler::getTable(sqlite3* db, const std::string &sql, std::vector<std::st
 
 	sqlite3_finalize(statement);
 
-	if(resultcode != SQLITE_DONE)
+	if(resultcode != SQLITE_DONE) {
 		return resultcode;
-
+	}
 	return SQLITE_OK;
 }
 
@@ -509,6 +518,7 @@ std::vector<std::string> DBHandler::retrieveFromTable(std::string sqlSELECT, int
 		int resultcode = 0;
 
 		do {
+			results = std::vector<std::string>();
 			//resultcode = sqlite3_get_table(db, sqlSELECT.c_str(), &results, &rows, &columns, &m_error);
 			resultcode = getTable(db, sqlSELECT, results, rows, columns);
 		} while(resultcode == SQLITE_BUSY);
@@ -519,6 +529,7 @@ std::vector<std::string> DBHandler::retrieveFromTable(std::string sqlSELECT, int
 		}
 
 		if (resultcode != SQLITE_OK) {
+			std::cout << sqlSELECT << std::endl;
 			std::stringstream errorStream;
 			errorStream << "DBHandler::retrieveFromTable(), " << sqlite3_errstr(resultcode);
 			std::cout << errorStream.str().c_str() << std::endl;

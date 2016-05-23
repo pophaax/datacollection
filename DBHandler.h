@@ -100,6 +100,8 @@ public:
 
 	void removeLogs(std::string data);
 
+	void clearLogs();
+
 	//get id from table returns either max or min id from table.
 	//max = false -> min id
 	//max = true -> max id
