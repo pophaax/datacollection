@@ -490,7 +490,7 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	if (db != NULL) {
 		int resultcode = 0;
 
-		do {http://www.sailingrobots.com/testdata/sync/
+		do {
 			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 		} while(resultcode == SQLITE_BUSY);
 
