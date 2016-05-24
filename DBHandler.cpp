@@ -490,14 +490,19 @@ int DBHandler::insertLog(std::string table, std::string values) {
 
 void DBHandler::queryTable(std::string sqlINSERT) {
 	sqlite3* db = openDatabase();
+	m_error = NULL;
 
 	if (db != NULL) {
 		int resultcode = 0;
 
 		do {
+			if(m_error != NULL) {
+				sqlite3_free(m_error);
+				m_error = NULL;
+			}
+
 			resultcode = sqlite3_exec(db, sqlINSERT.c_str(), NULL, NULL, &m_error);
 		} while(resultcode == SQLITE_BUSY);
-
 		if (m_error != NULL) {
 			std::stringstream errorStream;
 			errorStream << "DBHandler::queryTable(), " << sqlite3_errmsg(db);
@@ -509,7 +514,6 @@ void DBHandler::queryTable(std::string sqlINSERT) {
 	else {
 		throw "DBHandler::queryTable(), no db connection";
 	}
-
 	closeDatabase(db);
 }
 
