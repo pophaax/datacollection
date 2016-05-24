@@ -269,8 +269,10 @@ std::string DBHandler::getLogs() {
 
 void DBHandler::removeLogs(std::string data) {
 
-	if(data == "") {
-		m_logger.error("Error in DBHandler::removeLogs : response empty");
+	//Check for a valid parsing format
+	//Should probably create som kind of function to check if a string is json
+	if(data == "" || data.at(0) != '[') {
+		m_logger.error("Error in DBHandler::removeLogs with response : " + data);
 		return;
 	}
 
@@ -338,6 +340,8 @@ void DBHandler::insertScan(std::string waypoint_id, PositionModel position, floa
 std::string DBHandler::getWaypoints() {
 	int rows = 0;
 	Json json;
+	//The way waypoints are stored should probably be changed to
+	//work similary to the datalogs, non of the string cropping is necessary
 	std::string wp = "waypoint_";
 	try {
 		rows = getRows("waypoints");
