@@ -20,7 +20,7 @@ DBHandler::~DBHandler(void) {
 }
 
 
-void DBHandler::getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray) {
+void DBHandler::getDataAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray) {
 	int rows = 0, columns = 0;
 	std::vector<std::string> values;
 	std::vector<std::string> columnNames;
@@ -32,7 +32,7 @@ void DBHandler::getRowAsJson(std::string select, std::string table, std::string 
 		else
 			results = retrieveFromTable("SELECT " + select + " FROM " + table + " WHERE ID = " + id + ";", rows, columns);
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::getRowAsJson: " << error << std::endl;
+		std::cout << "error in DBHandler::getDataAsJson: " << error << std::endl;
 		m_logger.error("errors in dbhandler::getrowasjson : " + select + " table : " + table);
 	}
 
@@ -173,8 +173,6 @@ void DBHandler::updateTableJson(std::string table, std::string data) {
 	}
 	catch( const char * error) {
 		m_logger.error(std::string("Error in DBHandler::updateTable" + std::string(error)));
-		// m_logger.error(sqlite3_errmsg(m_db));
-		// throw std::string("Error in DBHandler::updateTable" + std::string(error)).c_str();
 	}
 }
 
@@ -255,7 +253,7 @@ std::string DBHandler::getLogs() {
 	try {
 		//insert all data in these tables as json array
 		for (auto table : datalogTables) {
-			getRowAsJson("*",table,table,"",json,true);
+			getDataAsJson("*",table,table,"",json,true);
 		}
 
 	} catch(const char * error) {
@@ -346,9 +344,9 @@ std::string DBHandler::getWaypoints() {
 	try {
 		rows = getRows("waypoints");
 		for(auto i = 1; i < rows; ++i) {
-			getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(i),std::to_string(i),json,true);
+			getDataAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(i),std::to_string(i),json,true);
 		}
-		getRowAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(rows),std::to_string(rows),json,true);
+		getDataAsJson("id,latitude,longitude,radius","waypoints",wp+std::to_string(rows),std::to_string(rows),json,true);
 	} catch (const char * error) {
 		m_logger.error("error in DBHandler::getWaypoints()");
 		std::stringstream ss;
@@ -370,7 +368,7 @@ std::string DBHandler::getIdFromTable(std::string table, bool max) {
 	} else {
 		results = retrieveFromTable("SELECT MIN(id) FROM " + table + ";", rows, columns);
 	}
-    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
+
     if (rows * columns < 1) {
     	return "";
     }
@@ -477,13 +475,13 @@ int DBHandler::insertLog(std::string table, std::string values) {
 	std::stringstream ss;
 	ss << "INSERT INTO " << table << " VALUES(NULL, " << values << ");";
 	int lastInsertedId = 0;
-	// std::cout << ss.str() << std::endl;
+
 	try {
 		queryTable(ss.str());
 		lastInsertedId = atoi(getIdFromTable(table,true).c_str());
 
 	} catch(const char * error) {
-		std::cout << "error in DBHandler::insertLog: " << error << std::endl;
+		m_logger.error( "error in DBHandler::insertLog : " + std::string(error));
 	}
 	return lastInsertedId;
 }
@@ -638,7 +636,7 @@ std::string DBHandler::getConfigs() {
 		//Query config tables and select all from config tables with id "1"
 		//This json structure does not use arrays
 		for (auto table : configTables) {
-			getRowAsJson("*",table,table,"1",json,false);
+			getDataAsJson("*",table,table,"1",json,false);
 		}
 	} catch(const char * error) {
 		m_logger.error("Error in DBHandler::getConfigs : " + std::string(error));

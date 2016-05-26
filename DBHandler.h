@@ -34,7 +34,7 @@ private:
 	//adds a table row into the json object as a array if array flag is true,
 	//otherwise it adds the table row as a json object
 	//id field is not obligatory, can be left empty
-	void getRowAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray);
+	void getDataAsJson(std::string select, std::string table, std::string key, std::string id, Json& json, bool useArray);
 
 	//gets the id column from a given table
 	std::vector<std::string> getTableIds(std::string table);
