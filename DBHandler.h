@@ -95,7 +95,7 @@ public:
     //retrieve one value from a table as integer
 	int retrieveCellAsInt(std::string table, std::string id, std::string column);
 
-	// returns first row in datalogs as JSON
+	// returns all logs in database as json
 	std::string getLogs();
 
 	void removeLogs(std::string data);
