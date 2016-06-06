@@ -252,8 +252,18 @@ std::string DBHandler::getLogs() {
 
 	try {
 		//insert all data in these tables as json array
+		
 		for (auto table : datalogTables) {
-			getDataAsJson("*",table,table,"",json,true);
+
+			//Temporary if-clause for testing latest-push; remove later!!
+			if(false){
+				getDataAsJson("*",table,table,"",json,true);
+				//m_logger.info("SQL RETURN (ALL): \n\n\n ____________________" + json.dump());
+			}else{
+				//THIS IS WHERE WE SELECT ONLY THE LAST ONE
+				getDataAsJson("*",table + " ORDER BY id DESC LIMIT 1",table,"",json,true);
+			}
+
 		}
 
 	} catch(const char * error) {
