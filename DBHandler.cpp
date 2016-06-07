@@ -244,7 +244,7 @@ int DBHandler::getRows(std::string table) {
 	return rows;
 }
 
-std::string DBHandler::getLogs() {
+std::string DBHandler::getLogs(bool onlyLatest) {
 	Json json;
 
 	//fetch all datatables ending with "_datalogs"
@@ -255,13 +255,11 @@ std::string DBHandler::getLogs() {
 		
 		for (auto table : datalogTables) {
 
-			//Temporary if-clause for testing latest-push; remove later!!
-			if(false){
-				getDataAsJson("*",table,table,"",json,true);
-				//m_logger.info("SQL RETURN (ALL): \n\n\n ____________________" + json.dump());
-			}else{
-				//THIS IS WHERE WE SELECT ONLY THE LAST ONE
+			if(onlyLatest){
+				//Gets the log entry with the highest id
 				getDataAsJson("*",table + " ORDER BY id DESC LIMIT 1",table,"",json,true);
+			}else{
+				getDataAsJson("*",table,table,"",json,true);
 			}
 
 		}
