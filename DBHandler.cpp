@@ -149,20 +149,29 @@ void DBHandler::insertMessageLog(std::string gps_time, std::string type, std::st
 	queryTable(sstm.str());
 }
 
-
+//Does not work
 void DBHandler::updateTableJson(std::string table, std::string data) {
 
+	m_logger.info(data);
 	std::vector<std::string> columns = getColumnInfo("name", table);
-	if(columns.size() <= 0 ) throw "ERROR in DBHandler::updateTable no such table " + table;
-	Json json = Json::parse(data);
+
+
+	if(columns.size() <= 0 ){
+ 		throw "ERROR in DBHandler::updateTable no such table " + table;
+	}
+
+	Json json = Json::parse(data); //[ES] debugging
+
 
 	std::stringstream ss;
 
 	//start at i = 1 to skip the id
 	ss << "SET ";
-	for (auto i = 1; i < json.size(); i++) {
+	int fixedSize = json.size(); //Size would sometimes change, added this variable
+	for (auto i = 1; i < fixedSize; i++) {
 		ss << columns.at(i) << " = " << json[columns.at(i)] << ",";
 	}
+
 	std::string values = ss.str();
 	values = values.substr(0, values.size()-1);
 
@@ -209,15 +218,24 @@ std::string DBHandler::retrieveCell(std::string table, std::string id, std::stri
 }
 
 void DBHandler::updateConfigs(std::string configs) {
+
+	//Debugging. Remove later.
+
+	
 	Json json = Json::parse(configs);
+
+	
 	std::vector<std::string> tables;
+
 
 	for (auto i : Json::iterator_wrapper(json))  {
 		tables.push_back(i.key());
 	}
 
-	for (auto table : tables) {
-		updateTableJson(table,json[table].dump());
+	//tables = sailing_config buffer_config etc
+
+	for (auto table : tables) { //for each table in there
+		updateTableJson(table,json[table].dump()); //eg updatetablejson("sailing_config", configs['sailing_config'] as json)
 	}
 }
 
@@ -446,6 +464,9 @@ int DBHandler::getTable(sqlite3* db, const std::string &sql, std::vector<std::st
 
 	// read column names
 	for(int i=0; i<columns; i++) {
+
+
+
 		if(!sqlite3_column_name(statement, i)) {
 			sqlite3_finalize(statement);
 			return SQLITE_EMPTY;
@@ -458,14 +479,19 @@ int DBHandler::getTable(sqlite3* db, const std::string &sql, std::vector<std::st
 	while( (resultcode = sqlite3_step(statement)) == SQLITE_ROW ) {
 
 		for(int i=0; i<columns; i++) {
-			if(!sqlite3_column_text(statement, i)) {
-				sqlite3_finalize(statement);
-				rows = 0;
-				columns = 0;
-				return SQLITE_EMPTY;
-			}
+			if (results[i] != "dflt_value"){ //[es] Not a perfect solution. Needed for pragma sql statements as it is always null
+				if(!sqlite3_column_text(statement, i)) {
+					sqlite3_finalize(statement);
+					rows = 0;
+					columns = 0;
+					return SQLITE_EMPTY;
+				}
 
-			results.emplace_back( reinterpret_cast<char*>(const_cast<unsigned char*>(sqlite3_column_text(statement, i))) );
+				results.emplace_back( reinterpret_cast<char*>(const_cast<unsigned char*>(sqlite3_column_text(statement, i))) );
+			}else{
+				results.emplace_back( "NULL" );
+			}
+			
 		}
 		rows++;
 	}
@@ -584,9 +610,13 @@ std::vector<std::string> DBHandler::getTableNames(std::string like) {
 }
 
 std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string table) {
-	int rows, columns;
+	int rows = 0, columns = 0;
     std::vector<std::string> results;
-    results = retrieveFromTable("PRAGMA table_info(" + table + ");", rows, columns);
+
+	std::string pragmaQuery = "PRAGMA table_info(" + table + ");";
+
+    results = retrieveFromTable(pragmaQuery, rows, columns);
+
     std::vector<std::string> types;
     int infoIndex = 0;
     for (int i = 0; i < columns; i++) {
@@ -596,7 +626,7 @@ std::vector<std::string> DBHandler::getColumnInfo(std::string info, std::string 
     }
 
 	for (int i = 1; i < rows+1; i++) {
-		types.push_back(results[i * columns + infoIndex]);
+		types.push_back(results[i * columns + infoIndex]); 
 	}
     return types;
 }
@@ -606,7 +636,6 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 	int rows, columns;
     std::vector<std::string> results;
     results = retrieveFromTable("SELECT MIN(id) FROM waypoints WHERE harvested = 0;", rows, columns);
-    //std::cout << "result |" << rows << ":" << columns << "|" << results << std::endl;
     if (rows * columns < 1 || results[1] == "\0") {
     	waypointModel.id = "";
     }
