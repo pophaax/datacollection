@@ -149,19 +149,17 @@ void DBHandler::insertMessageLog(std::string gps_time, std::string type, std::st
 	queryTable(sstm.str());
 }
 
-//Does not work
+
 void DBHandler::updateTableJson(std::string table, std::string data) {
 
-	m_logger.info(data);
+	//m_logger.info(" updateTableJson:\n"+data);
 	std::vector<std::string> columns = getColumnInfo("name", table);
-
 
 	if(columns.size() <= 0 ){
  		throw "ERROR in DBHandler::updateTable no such table " + table;
 	}
 
-	Json json = Json::parse(data); //[ES] debugging
-
+	Json json = Json::parse(data);
 
 	std::stringstream ss;
 
@@ -218,18 +216,13 @@ std::string DBHandler::retrieveCell(std::string table, std::string id, std::stri
 }
 
 void DBHandler::updateConfigs(std::string configs) {
-
-	//Debugging. Remove later.
-
 	
 	Json json = Json::parse(configs);
-
 	
 	std::vector<std::string> tables;
 
-
 	for (auto i : Json::iterator_wrapper(json))  {
-		tables.push_back(i.key());
+		tables.push_back(i.key()); //For each table key 
 	}
 
 	//tables = sailing_config buffer_config etc
@@ -237,6 +230,73 @@ void DBHandler::updateConfigs(std::string configs) {
 	for (auto table : tables) { //for each table in there
 		updateTableJson(table,json[table].dump()); //eg updatetablejson("sailing_config", configs['sailing_config'] as json)
 	}
+}
+
+
+void DBHandler::updateWaypoints(std::string waypoints){
+
+	Json json = Json::parse(waypoints);
+	std::string DBPrinter = "";
+	std::string tempValue = "";
+	int valuesLimit = 4; //"Dirty" fix for limiting the amount of values requested from server waypoint entries (amount of fields n = valuesLimit + 1)
+	int limitCounter;
+
+	try {
+		queryTable("DELETE FROM waypoints;");
+	}
+	catch( const char * error) {
+		m_logger.error(std::string("Error in DBHandler::updateWaypoints" + std::string(error)));
+	}
+
+	for (auto i : Json::iterator_wrapper(json))  {
+		//m_logger.info(i.value().dump());
+
+		for (auto y : Json::iterator_wrapper(i.value())){
+			
+			limitCounter = valuesLimit;
+			DBPrinter = "INSERT INTO waypoints (id,latitude,longitude,declination,radius,harvested) VALUES (";
+
+			for (auto z : Json::iterator_wrapper(y.value())){
+				//Each individual value
+				tempValue = z.value().dump();
+				tempValue = tempValue.substr(1, tempValue.size() - 2);
+				if (limitCounter > 0){
+					limitCounter--;
+					DBPrinter = DBPrinter + tempValue + ",";
+				}
+				
+			}
+
+			//if (DBPrinter.size () > 0)  DBPrinter.resize (DBPrinter.size () - 1);
+			DBPrinter = DBPrinter + "0,0);";
+
+			try {
+				queryTable(DBPrinter);
+			}
+			catch( const char * error) {
+				m_logger.error(std::string("Error in DBHandler::updateWaypoints" + std::string(error)));
+			}
+
+			//Insert output
+			//m_logger.info(DBPrinter);
+
+		}
+	}
+
+	//Make sure waypoints at beginning are harvested
+
+	if (!m_currentWaypointId.empty()){
+		std::string updateHarvested = "UPDATE waypoints SET harvested = 1 WHERE id < ";
+		updateHarvested += m_currentWaypointId + ";";
+
+		try {
+			queryTable(updateHarvested);
+		}
+		catch( const char * error) {
+			m_logger.error(std::string("Error in DBHandler::updateWaypoints" + std::string(error)));
+		}
+	}
+
 }
 
 
@@ -645,6 +705,7 @@ void DBHandler::getWaypointFromTable(WaypointModel &waypointModel){
 
 	if(!waypointModel.id.empty())
 	{
+		m_currentWaypointId = waypointModel.id;
 		waypointModel.positionModel.latitude = atof(retrieveCell("waypoints", waypointModel.id, "latitude").c_str());
 		waypointModel.positionModel.longitude = atof(retrieveCell("waypoints", waypointModel.id, "longitude").c_str());
 		waypointModel.radius = retrieveCellAsInt("waypoints", waypointModel.id, "radius");

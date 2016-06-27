@@ -21,6 +21,7 @@ private:
 
 	char* m_error;
 	int m_latestDataLogId;
+	std::string m_currentWaypointId = "";
 	Logger m_logger;
 	std::string m_filePath;
 
@@ -88,6 +89,7 @@ public:
 	void clearTable(std::string table);
 
 	void updateConfigs(std::string configs);
+	void updateWaypoints(std::string waypoints);
 
     //retrieve one value from a table as string
 	std::string retrieveCell(std::string table, std::string id, std::string column);
