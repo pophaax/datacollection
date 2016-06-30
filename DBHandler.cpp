@@ -159,6 +159,7 @@ void DBHandler::updateTableJson(std::string table, std::string data) {
  		throw "ERROR in DBHandler::updateTable no such table " + table;
 	}
 
+
 	Json json = Json::parse(data);
 
 	std::stringstream ss;
@@ -167,7 +168,9 @@ void DBHandler::updateTableJson(std::string table, std::string data) {
 	ss << "SET ";
 	int fixedSize = json.size(); //Size would sometimes change, added this variable
 	for (auto i = 1; i < fixedSize; i++) {
-		ss << columns.at(i) << " = " << json[columns.at(i)] << ",";
+		if (fixedSize > 1){
+			ss << columns.at(i) << " = " << json[columns.at(i)] << ","; //This crashes if the local database has fewer fields than the web database  (field out of range)
+		}
 	}
 
 	std::string values = ss.str();
@@ -218,7 +221,7 @@ std::string DBHandler::retrieveCell(std::string table, std::string id, std::stri
 void DBHandler::updateConfigs(std::string configs) {
 	
 	Json json = Json::parse(configs);
-	
+
 	std::vector<std::string> tables;
 
 	for (auto i : Json::iterator_wrapper(json))  {
@@ -228,7 +231,9 @@ void DBHandler::updateConfigs(std::string configs) {
 	//tables = sailing_config buffer_config etc
 
 	for (auto table : tables) { //for each table in there
-		updateTableJson(table,json[table].dump()); //eg updatetablejson("sailing_config", configs['sailing_config'] as json)
+		if(json[table] != NULL){
+			updateTableJson(table,json[table].dump()); //eg updatetablejson("sailing_config", configs['sailing_config'] as json)
+		}
 	}
 }
 
